@@ -433,6 +433,9 @@ const unsigned char tex_icedoor[]={
 const unsigned char img_slider[]={
 #embed "textures/arrowthing.png"
 };
+const unsigned char img_3dUIB[]={
+#embed "textures/3dUIB.png"
+};
 #define NUM_TEX 21
 typedef struct {
     Texture2D items[NUM_TEX];
@@ -718,6 +721,7 @@ Texture2D t_3dUI;
 Texture2D t_stick2;
 Texture2D t_icedoor;
 Texture2D t_slider;
+Texture2D t_3dUIB;
 //sounds
 float soundRolloffGlobal = 0.05f; //rolloff for sound attenuation, higher is quieter
 
@@ -3546,6 +3550,9 @@ int main(){
     img = LoadImageFromMemory(".png",img_3dUI,sizeof(img_3dUI));
     t_3dUI = LoadTextureFromImage(img);SetTextureFilter(t_3dUI,TEXTURE_FILTER_BILINEAR);
     UnloadImage(img);
+    img = LoadImageFromMemory(".png",img_3dUIB,sizeof(img_3dUIB));
+    t_3dUIB = LoadTextureFromImage(img);SetTextureFilter(t_3dUIB,TEXTURE_FILTER_BILINEAR);
+    UnloadImage(img);
     img = LoadImageFromMemory(".png",img_stick2,sizeof(img_stick2));
     t_stick2 = LoadTextureFromImage(img);SetTextureFilter(t_stick2,TEXTURE_FILTER_BILINEAR);
     UnloadImage(img);
@@ -3823,6 +3830,7 @@ static void dotheframecrap(){
     )&&usechar){
         if(paused){
             ResumeMusicStream(s_slide);
+            pausemenu=0;
         }else{
             if(oldrightcursor){
                 EnableCursor();
@@ -4244,26 +4252,27 @@ static void UpdateDrawFrame(void){
             Vector2 m = GetMousePosition();
             float srot = mod(GetTime()*80.0f,360);
             Vector2 soff = Vector2Scale(fixrotpos2(srot),spinysize*-.5);
+            
+            
+            float relmouse = m.y-(framey+(framesize*.24));
+            int mousehover = floor(relmouse/(framesize*.1));
+            float btsize = framesize*.09;
+            float btposx = framex+framesize*.8;
+            float slidersize = sh*.08;
+            float sliderbgsize = framesize*.05;
+            float sliderposy = framey+(framesize*.54)+(btsize/2);
+            
+            bool ishovering = false;
             switch(pausemenu){
                 case 0:
-                    float relmouse = m.y-(framey+(framesize*.24));
-                    int mousehover = floor(relmouse/(framesize*.1));
-                    bool ishovering = mod(relmouse,framesize*.1)<=framesize*.09
-                    &&mousehover>-1&&mousehover<7
-                    &&m.x>=framex&&m.x<=framex+framesize;
+                    ishovering = mod(relmouse,framesize*.1)<=framesize*.09
+                        &&mousehover>-1&&mousehover<7
+                        &&m.x>=framex&&m.x<=framex+framesize;
                     if(ishovering){
                         pauseselt=mousehover;
                     }
-                    float hovery = sframey+(sframesize*(.24+pauseselt/10.0))+sframesize*.045;
-                    spinyy += (hovery-spinyy)*(dt*20);
-                    float hoverx = sframex+sframesize*.1+spinysize*.5;
-                    spinyx += (hoverx-spinyx)*(dt*20);
-                    DrawTextureEx(spinny,Vector2Add((Vector2){spinyx,spinyy},soff),srot,0.0078125f*spinysize,WHITE);
-                    
                     r64text("Paused",sw2,framey+(framesize*.047),framesize*.12,.5,0,WHITE);
                     
-                    float btsize = framesize*.09;
-                    float btposx = framex+framesize*.8;
                     r64text("Resume",sw2,framey+(framesize*.24),btsize,.5,0,WHITE); //id 0
                     DrawTexturePro(t_3dUI,(Rectangle){128,0,128,128},(Rectangle){btposx,framey+(framesize*.24),btsize,btsize},(Vector2){0},0,WHITE);
                     r64text("Icecreams",sw2,framey+(framesize*.34),btsize,.5,0,WHITE);
@@ -4272,19 +4281,14 @@ static void UpdateDrawFrame(void){
                     DrawTexturePro(t_3dUI,(Rectangle){384,128,128,128},(Rectangle){btposx,framey+(framesize*.44),btsize,btsize},(Vector2){0},0,WHITE);
                     r64text("Clothing",sw2,framey+(framesize*.54),btsize,.5,0,WHITE);
                     DrawTexturePro(t_3dUI,(Rectangle){384,0,128,128},(Rectangle){btposx,framey+(framesize*.54),btsize,btsize},(Vector2){0},0,WHITE);
-                    r64text("Follow Camera",sw2,framey+(framesize*.64),btsize,.5,0,WHITE);
-                    DrawTexturePro(t_3dUI,(Rectangle){stillcam?128:0,128,128,128},(Rectangle){btposx,framey+(framesize*.64),btsize,btsize},(Vector2){0},0,WHITE);
+                    r64text("Settings",sw2,framey+(framesize*.64),btsize,.5,0,WHITE);
+                    DrawTexturePro(t_3dUIB,(Rectangle){128,128,128,128},(Rectangle){btposx,framey+(framesize*.64),btsize,btsize},(Vector2){0},0,WHITE);
                     r64text("Back to Hub",sw2,framey+(framesize*.74),btsize,.5,0,WHITE);
                     DrawTexturePro(t_3dUI,(Rectangle){256,0,128,128},(Rectangle){btposx,framey+(framesize*.74),btsize,btsize},(Vector2){0},0,WHITE);
                     r64text("Quit to Title",sw2,framey+(framesize*.84),btsize,.5,0,WHITE);
                     DrawTexturePro(t_3dUI,(Rectangle){256,128,128,128},(Rectangle){btposx,framey+(framesize*.84),btsize,btsize},(Vector2){0},0,WHITE);
                     
                     
-                    r64text("Sensitivity:",sw2,sh*0.9,sh*0.04f,.5f,.5f,WHITE);
-                    DrawRectangleV((Vector2){sw*.4,sh*.95},(Vector2){sw*.2,sh*.02},GREEN);//WHITE
-                    float slidersize = sh*.08;
-                    DrawTexturePro(t_slider,(Rectangle){0,0,256,256},(Rectangle){sw*.4+sensitivity*sw*.2-slidersize/2,sh*.96,slidersize,slidersize},(Vector2){0},0,WHITE);
-                    //DrawRectangleV((Vector2){sw*.395+sensitivity*sw*.2,sh*.94},(Vector2){sw*.01,sh*.04},GREEN);
                     if((IsMouseButtonPressed(MOUSE_BUTTON_LEFT)&&ishovering)||IsKeyPressed(KEY_SPACE)
 #if defined(PLATFORM_WEB)
 #else
@@ -4297,18 +4301,63 @@ static void UpdateDrawFrame(void){
                                 paused = !paused;
                                 break;
                             case 4:
+                                //stillcam=!stillcam;
+                                pausemenu=1;
+                                break;
+                            default:
+                                PlaySound(s_cancel);
+                        }
+                    }
+                    break;
+                case 1:
+                    ishovering = mod(relmouse,framesize*.1)<=framesize*.09
+                        &&mousehover>-1&&mousehover<2
+                        &&m.x>=framex&&m.x<=framex+framesize;
+                    if(ishovering){
+                        pauseselt=mousehover;
+                    }
+                    r64text("Settings",sw2,framey+(framesize*.047),framesize*.12,.5,0,WHITE);
+                    
+                    r64text("Back",sw2,framey+(framesize*.24),btsize,.5,0,WHITE);
+                    DrawTexturePro(t_3dUI,(Rectangle){128,0,128,128},(Rectangle){btposx,framey+(framesize*.24),btsize,btsize},(Vector2){0},0,WHITE);
+                    r64text("Follow Camera",sw2,framey+(framesize*.34),btsize,.5,0,WHITE);
+                    DrawTexturePro(t_3dUI,(Rectangle){stillcam?128:0,128,128,128},(Rectangle){btposx,framey+(framesize*.34),btsize,btsize},(Vector2){0},0,WHITE);
+                    
+                    r64text("Sensitivity:",sw2,framey+(framesize*.44),btsize,.5,0,(Color){200,200,200,255});
+                    DrawRectangleV((Vector2){sw*.4,sliderposy-(sliderbgsize/2)},(Vector2){sw*.2,sliderbgsize},GREEN);
+                    DrawTexturePro(
+                    t_slider,(Rectangle){0,0,256,256},(Rectangle){sw*.4+sensitivity*sw*.2-slidersize/2,sliderposy,slidersize,slidersize},(Vector2){0},0,WHITE
+                    );
+                    
+                    
+                    if((IsMouseButtonPressed(MOUSE_BUTTON_LEFT)&&ishovering)||IsKeyPressed(KEY_SPACE)
+#if defined(PLATFORM_WEB)
+#else
+                        ||IsGamepadButtonPressed(0,GAMEPAD_BUTTON_RIGHT_FACE_DOWN)
+#endif
+                    ){
+                        switch(pauseselt){
+                            case 0:
+                                pausemenu=0;
+                                break;
+                            case 1:
                                 stillcam=!stillcam;
                                 break;
                             default:
                                 PlaySound(s_cancel);
                         }
                     }
-                    if(IsMouseButtonDown(MOUSE_BUTTON_LEFT)&&m.y>sh*.93&&m.y<sh*.99){
+                    if(IsMouseButtonDown(MOUSE_BUTTON_LEFT)&&m.y>sliderposy-(sliderbgsize/2)&&m.y<sliderposy+(sliderbgsize/2)){
                         sensitivity = fmax(0,fmin(1,(m.x/sw)*5-(1/.5)));
                         sensitivity = round(sensitivity*8)/8;
                     }
                     break;
             }
+            float hovery = sframey+(sframesize*(.24+pauseselt/10.0))+sframesize*.045;
+            spinyy += (hovery-spinyy)*(dt*20);
+            float hoverx = sframex+sframesize*.1+spinysize*.5;
+            spinyx += (hoverx-spinyx)*(dt*20);
+            DrawTextureEx(spinny,Vector2Add((Vector2){spinyx,spinyy},soff),srot,0.0078125f*spinysize,WHITE);
         }
         if(plrgotice){
             int ish = sh-inset;
