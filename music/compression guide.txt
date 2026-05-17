@@ -1,0 +1,8 @@
+command to compress:
+ffmpeg -i file.ogg -c:a libvorbis -q:a ? -af aresample=async=1 file-out.ogg
+replace the ? with the value specified (0-10)
+
+title: 3      (not 1 due to rattling with yoshis island piano)
+enjoy your stay: 1
+hub world: 2 (not 1 because rattling with bass)
+turtle tops: 1

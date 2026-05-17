@@ -1,0 +1,7 @@
+command to compress ogg vorbis to ogg opus:
+ffmpeg -i vorb.ogg -c:a libopus -b:a ??K opus.ogg
+replace the ?? with the value specified
+
+title: 64K
+enjoy your stay: 50K
+hub world: 50K
