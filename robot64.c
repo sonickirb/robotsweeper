@@ -2484,6 +2484,17 @@ void PlaySoundAtBeebo(Sound sound,float volumeModifier)
     PlaySoundAtPosition(sound, vistorsopos, NULL,volumeModifier);
 }
 
+void damage(){
+    plrhurt=120;
+    plrhealth--;
+    PlaySoundAtBeebo(s_damage,1);
+    plrflying=false;
+    plrhasfly=false;
+    if(plrhealth>4){
+        plrhealth=4;
+    }
+}
+
 bool debugmode = false;
 #define P_DEBUGSPEED 2
 #define P_BFORCE .012f
@@ -2510,6 +2521,7 @@ uint8_t walltimer = 0;
 uint8_t swiptimer = 0;
 uint8_t icedtimer = 0;
 uint8_t watertimer = 0;
+uint8_t untildmg = 0;
 bool plrdebounce=false;
 uint8_t plrdebouncetimer = 0;
 bool canmove = true;
@@ -3384,6 +3396,12 @@ void stepchar(){
                 plrdebounce=false;
             }
         }
+        if(untildmg>0){
+            untildmg--;
+            if(untildmg==0){
+                damage();
+            }
+        }
         //entity collision
         bool inwatr=false;
         if(entlist.count>0&&!trsing2){
@@ -3679,14 +3697,7 @@ void stepchar(){
         particle(0,8,true,vistorsopos,1);
     }
     if(IsKeyPressed(KEY_L)){
-        plrhurt=120;
-        plrhealth--;
-        PlaySoundAtBeebo(s_damage,1);
-        plrflying=false;
-        plrhasfly=false;
-        if(plrhealth>4){
-            plrhealth=4;
-        }
+        damage();
     }
 }
 
@@ -4556,6 +4567,7 @@ static void UpdateDrawFrame(void){
                             plrdebounce=false;
                             plrsliding=false;plrflying=false;plrlongjump=false;plrpound=false;plrrolling=false; //add skate before rolling
                             plrpos=safecf;
+                            untildmg=24;
                         }
                         break;
                 }
