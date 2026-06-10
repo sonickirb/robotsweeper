@@ -67,6 +67,7 @@ typedef struct {
     bool nocol;
     bool keepload;
     bool hide;
+    bool bounds;
     Matrix mat;
 } Terrain;
 typedef struct {
@@ -1535,8 +1536,13 @@ void map_tutorial(){
     tmp.x = 0;tmp.y = 28;tmp.z = 352;tmp.s = 1;tmp.mdl=LoadModelFromMesh(GenMeshCubeT(
     24,16,24,8));tmp.mdl.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = pad;tmp.gen = true;newg.items[i] = tmp; i++;
     
-    tmp.x = 0;tmp.y = 148.025;tmp.z = 308;tmp.s = 1;tmp.mdl=LoadModelFromMesh(GenMeshCubeT(
-    152,.05,768,8));tmp.plain = true;tmp.gen = true;tmp.glow = true;newg.items[i] = tmp; i++;
+    tmp.x = 0;tmp.y = 148.025;tmp.z = 308;tmp.s = 1;tmp.mdl=LoadModelFromMesh(GenMeshCube(
+    152,.05,768));tmp.plain = true;tmp.gen = true;tmp.glow = true;newg.items[i] = tmp; i++;
+
+    tmp.x = 0;tmp.y = -64;tmp.z = 252;tmp.s = 1;tmp.bounds=true;tmp.mdl=LoadModelFromMesh(GenMeshCube(
+    88,8,304));tmp.mdl.materials[0].maps[MATERIAL_MAP_DIFFUSE].color = BLACK;tmp.plain = true;tmp.gen = true;tmp.glow = true;newg.items[i] = tmp; i++;
+    tmp.x = 0;tmp.y = -16;tmp.z = 464;tmp.s = 1;tmp.bounds=true;tmp.mdl=LoadModelFromMesh(GenMeshCube(
+    16,8,40));tmp.mdl.materials[0].maps[MATERIAL_MAP_DIFFUSE].color = BLACK;tmp.plain = true;tmp.gen = true;tmp.glow = true;newg.items[i] = tmp; i++;
     
     newg.count = i;
     gm3d = newg;
@@ -1697,6 +1703,7 @@ bool plrpole=false;
 Vector3 plrpolepos={0};
 Vector3 plrpolesiz={0};
 bool oplrg = false;
+int whichground = 0;
 bool plrdancing = false;
 bool plrgotice = false;
 bool plrswip = false;
@@ -2366,6 +2373,7 @@ RayCollision beebtryground(Vector3 off, float raydist){
                 plrg = true;
                 skibidi = test;
                 closest=test.distance;
+                whichground=i;
             }
         }
     }
@@ -2484,6 +2492,17 @@ void PlaySoundAtBeebo(Sound sound,float volumeModifier)
     PlaySoundAtPosition(sound, vistorsopos, NULL,volumeModifier);
 }
 
+void damage(){
+    plrhurt=120;
+    plrhealth--;
+    PlaySoundAtBeebo(s_damage,1);
+    plrflying=false;
+    plrhasfly=false;
+    if(plrhealth>4){
+        plrhealth=4;
+    }
+}
+
 bool debugmode = false;
 #define P_DEBUGSPEED 2
 #define P_BFORCE .012f
@@ -2510,6 +2529,7 @@ uint8_t walltimer = 0;
 uint8_t swiptimer = 0;
 uint8_t icedtimer = 0;
 uint8_t watertimer = 0;
+uint8_t untildmg = 0;
 bool plrdebounce=false;
 uint8_t plrdebouncetimer = 0;
 bool canmove = true;
@@ -3384,6 +3404,12 @@ void stepchar(){
                 plrdebounce=false;
             }
         }
+        if(untildmg>0){
+            untildmg--;
+            if(untildmg==0){
+                damage();
+            }
+        }
         //entity collision
         bool inwatr=false;
         if(entlist.count>0&&!trsing2){
@@ -3581,7 +3607,7 @@ void stepchar(){
         }else{
             skibidi = (RayCollision){0};
         }
-        if(plrpos.y-1<-400&&!plrdebounce){
+        if((plrpos.y-1<-400||(plrg&&gm3d.items[whichground].bounds))&&!plrdebounce){
             trstype=1;transition(true);
             plrdebounce=true;
         }
@@ -3679,14 +3705,7 @@ void stepchar(){
         particle(0,8,true,vistorsopos,1);
     }
     if(IsKeyPressed(KEY_L)){
-        plrhurt=120;
-        plrhealth--;
-        PlaySoundAtBeebo(s_damage,1);
-        plrflying=false;
-        plrhasfly=false;
-        if(plrhealth>4){
-            plrhealth=4;
-        }
+        damage();
     }
 }
 
@@ -4556,6 +4575,7 @@ static void UpdateDrawFrame(void){
                             plrdebounce=false;
                             plrsliding=false;plrflying=false;plrlongjump=false;plrpound=false;plrrolling=false; //add skate before rolling
                             plrpos=safecf;
+                            untildmg=24;
                         }
                         break;
                 }
@@ -4715,7 +4735,7 @@ static void UpdateDrawFrame(void){
         
         //except for debugging stuff because that oesnt really matter
         // DEBUGGGING TEXTs
-        r64text(TextFormat("Robot 64 Recompiled WIP v24 (https://github.com/coneputer/robot64)\nterrain count: %i\nentity count: %i",gm3d.count,entlist.count),20,20,20,0,0,WHITE);
+        r64text(TextFormat("Robot 64 Recompiled WIP v25 (https://github.com/coneputer/robot64)\nterrain count: %i\nentity count: %i",gm3d.count,entlist.count),20,20,20,0,0,WHITE);
         r64text(TextFormat("campos: %.2f, %.2f, %.2f",camera.position.x,camera.position.y,camera.position.z),20,100,20,0,0,WHITE);
         //r64text(TextFormat("lastcampos: %.2f, %.2f, %.2f",lastcampos.x,lastcampos.y,lastcampos.z),20,110,20,0,0,WHITE);
         //for (i=0;i<activeSounds.count;i++){
