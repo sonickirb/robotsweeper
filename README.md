@@ -14,11 +14,29 @@ Press `J` to toggle skateboard
 Press `L` to take damage
 
 # Compiling
-you need mingw64 version of gcc to do this  
 
-first you have to build the rc data by running `windres robot64.rc -o robot64.rc.data`  
+### Requirements
+- windres
 
-Windows: run `make` (this launches the makefile)  
-Web: run the command found in "webcompilecommand.txt"  
+you have to build the rc data by running `windres robot64.rc -o robot64.rc.data` (required by all platforms)
+
+## Windows
+
+### Windows Requirements
+- mingw64
+
+run `make` in the repository directory
+
+## Web
+
+run the command found in "webcompilecommand.txt"
+
+## Linux
+
+### Linux Requirements
+- gcc-15
+- make
+
+run `make` in the repository directory
 
 its a little weird but it gets the jobb doen i guess  

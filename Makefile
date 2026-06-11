@@ -117,6 +117,10 @@ ifeq ($(PLATFORM),PLATFORM_DESKTOP)
         # FreeBSD, OpenBSD, NetBSD, DragonFly default compiler
         CC = clang
     endif
+    # use gcc-15 (C23) on linux
+    ifeq ($(PLATFORM_OS),LINUX)
+	CC = gcc-15
+    endif
 endif
 ifeq ($(PLATFORM),PLATFORM_WEB)
     # HTML5 emscripten compiler
@@ -158,6 +162,11 @@ ifeq ($(TARGET_PLATFORM),$(filter $(TARGET_PLATFORM),PLATFORM_WEB PLATFORM_WEB_R
             MAKE = mingw32-make
         endif
     endif
+endif
+
+# sigh
+ifeq ($(PLATFORM_OS),LINUX)
+	MAKE = make
 endif
 
 # Define compiler flags: CFLAGS
@@ -368,7 +377,7 @@ all:
 # Project target defined by PROJECT_NAME
 $(PROJECT_NAME): $(OBJS)
 	$(CC) -o $(PROJECT_BUILD_PATH)/$(PROJECT_NAME)$(EXT) $(OBJS) $(CFLAGS) $(INCLUDE_PATHS) $(LDFLAGS) $(LDLIBS) -D$(PLATFORM)
-	./$(PROJECT_NAME).exe
+	./$(PROJECT_NAME)$(EXT)
 
 # Compile source files
 # NOTE: This pattern will compile every module defined on $(OBJS)
