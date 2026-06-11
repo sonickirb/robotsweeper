@@ -106,7 +106,7 @@ endif
 
 # Define default C compiler: CC
 #------------------------------------------------------------------------------------------------
-CC = gcc-15
+CC = gcc
 
 ifeq ($(PLATFORM),PLATFORM_DESKTOP)
     ifeq ($(PLATFORM_OS),OSX)
@@ -139,23 +139,23 @@ MAKE ?= make
 
 ifeq ($(PLATFORM),PLATFORM_DESKTOP)
     ifeq ($(PLATFORM_OS),WINDOWS)
-        MAKE = make
+        MAKE = mingw32-make
     endif
 endif
 ifeq ($(PLATFORM),PLATFORM_ANDROID)
     ifeq ($(PLATFORM_OS),WINDOWS)
-        MAKE = make
+        MAKE = mingw32-make
     endif
 endif
 ifeq ($(TARGET_PLATFORM),$(filter $(TARGET_PLATFORM),PLATFORM_WEB PLATFORM_WEB_RGFW))
     ifeq ($(PLATFORM_OS),WINDOWS)
-        MAKE = make
+        MAKE = mingw32-make
     else
         EMMAKE := $(shell command -v emmake)
         ifneq (, $(EMMAKE))
             MAKE = $(EMMAKE) make
         else
-            MAKE = make
+            MAKE = mingw32-make
         endif
     endif
 endif
