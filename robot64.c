@@ -1254,7 +1254,15 @@ Entity spawnIcedoor(float x,float y,float z,float sx,float sy,float sz,int req){
 bool usechar = false;
 short map;
 uint8_t titleselt;
+
+Camera camera = { 0 };
+
 void map_title(){
+    camera.position = (Vector3){0, 0, -10};
+    camera.target = (Vector3){0};
+    camera.up = (Vector3){0,1,0};
+    camera.fovy = 70.0f;
+    camera.projection = CAMERA_PERSPECTIVE;
     setamb(159,154,135,.3);
     setsundir2(13,40);
     iswallrad=false;
@@ -1668,7 +1676,6 @@ void map_turtle(){
 }
 
 //vars
-Camera camera = { 0 };
 Vector3 lastcampos = {0};
 uint32_t frame = 0;
 uint32_t bus = 0;
@@ -4658,6 +4665,18 @@ static void UpdateDrawFrame(void){
                                 //stillcam=!stillcam;
                                 pausemenu=1;
                                 pauseselt=0;
+                                break;
+                            case 5:
+                                tomap = M_HUB;
+                                trstype = 0;
+                                transition(true);
+                                paused = !paused;
+                                break;
+                            case 6:
+                                tomap = M_TITLE;
+                                trstype = 0;
+                                transition(true);
+                                paused = !paused;
                                 break;
                             default:
                                 PlaySound(s_cancel);
