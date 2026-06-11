@@ -1117,6 +1117,7 @@ bool canbgmW=false;
 Music bgmC;//3
 bool canbgmC=false;
 Music bgmP;//7
+bool canbgmP=false;
 float bgmvols[9] = {1,0,0,0,0,0,0,0,0};
 uint8_t songplay=0;
 
@@ -1127,7 +1128,6 @@ void unloadassets(){
     printf("unloadassets1\n");
     UnloadTexture(skybox.materials[0].maps[MATERIAL_MAP_CUBEMAP].texture);
     StopMusicStream(bgm);
-    StopMusicStream(bgmP);
     UnloadMusicStream(bgm);
     if(canbgmA){
         StopMusicStream(bgmA);
@@ -1144,7 +1144,11 @@ void unloadassets(){
         UnloadMusicStream(bgmC);
         canbgmC=false;
     }
-    UnloadMusicStream(bgmP);
+    if(canbgmP){
+        StopMusicStream(bgmP);
+        UnloadMusicStream(bgmP);
+        canbgmP=false;
+    }
     int i;
     for(i=0;i<9;i++){
         bgmvols[i]=0;
@@ -1275,10 +1279,14 @@ void map_title(){
     UnloadImage(img);
     bgm = LoadMusicStreamFromMemory(".ogg",title_bgm,sizeof(title_bgm));
 	bgm.looping = true;
+    canbgmA=false;
+    canbgmC=false;
+    canbgmP=false;
+    canbgmW=false;
 	PlayMusicStream(bgm);
     gm3dlist newg;
     int i=0;
-    Terrain tmp; //robot 64 logo
+    Terrain tmp = {0}; //robot 64 logo
     tmp.x = 0;tmp.y = 0;tmp.z = 23;
     tmp.s = .03882770207;tmp.model = 2;tmp.tex = 2;
     newg.items[i] = tmp;i++;
@@ -1304,7 +1312,7 @@ void map_hub(){
     bgmA = LoadMusicStreamFromMemory(".ogg",hub_bgmA,sizeof(hub_bgmA));bgmA.looping = true;PlayMusicStream(bgmA);canbgmA=true;
     bgmW = LoadMusicStreamFromMemory(".ogg",hub_bgmW,sizeof(hub_bgmW));bgmW.looping = true;PlayMusicStream(bgmW);canbgmW=true;
     bgmC = LoadMusicStreamFromMemory(".ogg",hub_bgmC,sizeof(hub_bgmC));bgmC.looping = true;PlayMusicStream(bgmC);canbgmC=true;
-    bgmP = LoadMusicStreamFromMemory(".ogg",hub_bgmP,sizeof(hub_bgmP));bgmP.looping = true;PlayMusicStream(bgmP);
+    bgmP = LoadMusicStreamFromMemory(".ogg",hub_bgmP,sizeof(hub_bgmP));bgmP.looping = true;PlayMusicStream(bgmP);canbgmP=true;
     gm3dlist newg;
     int i=0;
     Terrain tmp = {0}; //hub grass
@@ -1472,7 +1480,7 @@ void map_tutorial(){
     bgm = LoadMusicStreamFromMemory(".ogg",tutorial_bgm,sizeof(tutorial_bgm));bgm.looping = true;PlayMusicStream(bgm);
     canbgmA=false;
     canbgmW=false;
-    bgmP = LoadMusicStreamFromMemory(".ogg",tutorial_bgmP,sizeof(tutorial_bgmP));bgmP.looping = true;PlayMusicStream(bgmP);
+    bgmP = LoadMusicStreamFromMemory(".ogg",tutorial_bgmP,sizeof(tutorial_bgmP));bgmP.looping = true;PlayMusicStream(bgmP);canbgmP=true;
     img = LoadImageFromMemory(".png",tex_padding,sizeof(tex_padding));
     Texture2D pad = LoadTextureFromImage(img);
     SetTextureWrap(pad,TEXTURE_WRAP_REPEAT);
@@ -1631,7 +1639,7 @@ void map_turtle(){
     bgm = LoadMusicStreamFromMemory(".ogg",turtle_bgm,sizeof(turtle_bgm));bgm.looping = true;PlayMusicStream(bgm);
     bgmA = LoadMusicStreamFromMemory(".ogg",turtle_bgmA,sizeof(turtle_bgmA));bgmA.looping = true;PlayMusicStream(bgmA);canbgmA=true;
     bgmW = LoadMusicStreamFromMemory(".ogg",turtle_bgmW,sizeof(turtle_bgmW));bgmW.looping = true;PlayMusicStream(bgmW);canbgmW=true;
-    bgmP = LoadMusicStreamFromMemory(".ogg",turtle_bgmP,sizeof(turtle_bgmP));bgmP.looping = true;PlayMusicStream(bgmP);
+    bgmP = LoadMusicStreamFromMemory(".ogg",turtle_bgmP,sizeof(turtle_bgmP));bgmP.looping = true;PlayMusicStream(bgmP);canbgmP=true;
     gm3dlist newg;
     int i = 0;
     Terrain tmp = {0}; //turtle grass
@@ -4243,7 +4251,9 @@ static void dotheframecrap(){
     if(canbgmW){
         SetMusicVolume(bgmW,bgmvols[2]);UpdateMusicStream(bgmW);
     }
-    SetMusicVolume(bgmP,bgmvols[7]);UpdateMusicStream(bgmP);
+    if(canbgmP){
+        SetMusicVolume(bgmP,bgmvols[7]);UpdateMusicStream(bgmP);
+    }
 
     // Calculate doppler for all positional sounds
     float ft = GetFrameTime();
@@ -4457,6 +4467,7 @@ static void UpdateDrawFrame(void){
             )&&(!trsing)){
                 tomap = titleselt>0?M_TUTORIAL:M_HUB;
                 if(tomap==M_TUTORIAL){
+                    tomapx=0;
                     tomapy=6;
                     tomapz=-8;
                 }else{
