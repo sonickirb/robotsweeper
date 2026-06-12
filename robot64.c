@@ -4203,9 +4203,9 @@ static void dotheframecrap(){
     if((IsKeyPressed(KEY_ESCAPE)||IsKeyPressed(KEY_P)||IsKeyPressed(KEY_GRAVE)
     ||(!paused&&IsMouseButtonPressed(MOUSE_BUTTON_LEFT)&&CheckCollisionPointRec((Vector2){m.x,m.y},pauserec))    
     )&&usechar&&!plrgotice){
+        pausemenu=0;
         if(paused){
             ResumeMusicStream(s_slide);
-            pausemenu=0;
         }else{
             if(oldrightcursor){
                 EnableCursor();
@@ -4768,20 +4768,12 @@ static void UpdateDrawFrame(void){
                                 pauseselt=0;
                                 break;
                             case 5:
-                                paused = !paused;
-
-                                tomapx=-12.433;
-                                tomapy=15.02;
-                                tomapz=56.217;
-                                tomap = M_HUB;
-                                trstype = 0;
-                                transition(true);
+                                pausemenu=2;
+                                pauseselt=0;
                                 break;
                             case 6:
-                                tomap = M_TITLE;
-                                trstype = 0;
-                                transition(true);
-                                paused = !paused;
+                                pausemenu=3;
+                                pauseselt=0;
                                 break;
                             default:
                                 PlaySound(s_cancel);
@@ -4841,12 +4833,81 @@ static void UpdateDrawFrame(void){
                         //gameVolume = round(gameVolume*8)/8;
                     }
                     break;
+                case 2:
+                    ishovering = mod(relmouse,framesize*.1)<=framesize*.09
+                        &&mousehover>-1&&mousehover<2
+                        &&m.x>=framex&&m.x<=framex+framesize;
+                    if(ishovering){
+                        pauseselt=mousehover;
+                    }
+                    r64text("Are you sure?",sw2,framey+(framesize*.047),framesize*.12,.5,0,WHITE);
+                    
+                    r64text("Back to Hub",sw2,framey+(framesize*.24),btsize,.5,0,WHITE);
+                    DrawTexturePro(t_3dUI,(Rectangle){256,0,128,128},(Rectangle){btposx,framey+(framesize*.24),btsize,btsize},(Vector2){0},0,WHITE);
+                    r64text("Cancel",sw2,framey+(framesize*.34),btsize,.5,0,WHITE);
+                    DrawTexturePro(t_3dUI,(Rectangle){128,0,128,128},(Rectangle){btposx,framey+(framesize*.34),btsize,btsize},(Vector2){0},0,WHITE);
+                    
+                    if((IsMouseButtonPressed(MOUSE_BUTTON_LEFT)&&ishovering)||IsKeyPressed(KEY_SPACE)
+#if defined(PLATFORM_WEB)
+#else
+                        ||IsGamepadButtonPressed(0,GAMEPAD_BUTTON_RIGHT_FACE_DOWN)
+#endif
+                    ){
+                        switch(pauseselt){
+                            case 0:
+                                paused = !paused;
+
+                                tomapx=-12.433;
+                                tomapy=15.02;
+                                tomapz=56.217;
+                                tomap = M_HUB;
+                                trstype = 0;
+                                transition(true);
+                                ResumeMusicStream(s_slide);
+                                break;
+                            case 1:
+                                pausemenu=0;
+                                pauseselt=0;
+                                break;
+                        }
+                    }
+                    break;
+                case 3:
+                    ishovering = mod(relmouse,framesize*.1)<=framesize*.09
+                        &&mousehover>-1&&mousehover<2
+                        &&m.x>=framex&&m.x<=framex+framesize;
+                    if(ishovering){
+                        pauseselt=mousehover;
+                    }
+                    r64text("Are you sure?",sw2,framey+(framesize*.047),framesize*.12,.5,0,WHITE);
+                    
+                    r64text("Quit to Title",sw2,framey+(framesize*.24),btsize,.5,0,WHITE);
+                    DrawTexturePro(t_3dUI,(Rectangle){256,128,128,128},(Rectangle){btposx,framey+(framesize*.24),btsize,btsize},(Vector2){0},0,WHITE);
+                    r64text("Cancel",sw2,framey+(framesize*.34),btsize,.5,0,WHITE);
+                    DrawTexturePro(t_3dUI,(Rectangle){128,0,128,128},(Rectangle){btposx,framey+(framesize*.34),btsize,btsize},(Vector2){0},0,WHITE);
+                    
+                    if((IsMouseButtonPressed(MOUSE_BUTTON_LEFT)&&ishovering)||IsKeyPressed(KEY_SPACE)
+#if defined(PLATFORM_WEB)
+#else
+                        ||IsGamepadButtonPressed(0,GAMEPAD_BUTTON_RIGHT_FACE_DOWN)
+#endif
+                    ){
+                        switch(pauseselt){
+                            case 0:
+                                tomap = M_TITLE;
+                                trstype = 0;
+                                transition(true);
+                                paused = !paused;
+                                ResumeMusicStream(s_slide);
+                                break;
+                            case 1:
+                                pausemenu=0;
+                                pauseselt=0;
+                                break;
+                        }
+                    }
+                    break;
             }
-            //float hovery = sframey+(sframesize*(.24+pauseselt/10.0))+sframesize*.045;
-            //spinyy += (hovery-spinyy)*(dt*20);
-            //float hoverx = sframex+sframesize*.1+spinysize*.5;
-            //spinyx += (hoverx-spinyx)*(dt*20);
-            //DrawTextureEx(spinny,Vector2Add((Vector2){spinyx,spinyy},soff),srot,0.0078125f*spinysize,WHITE);
             float hovery = .24+pauseselt/10.0;
             spinyy += (hovery-spinyy)*(dt*20);
             float hoverx = .1;
