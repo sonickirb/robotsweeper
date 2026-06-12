@@ -1236,7 +1236,87 @@ Entity spawnBreak(float x,float y,float z){
     gm3d.count++;
     return e;
 }
+
+int candy = 0;
+int scandy = 0;
+int icedcream = 0;
+int icedcreamid = 0;
+bool icedfound[64] = {};
+
+void countIcedcream() {
+    icedcream = 0;
+    for (int i = 0; i < 64; i++)
+        if (icedfound[i] == true) 
+            icedcream++;
+}
+
+void resetGameVariables() {
+    scandy = 0;
+    candy = 0;
+    scandy = 0;
+    icedcream = 0;
+    //icedfound = {}; // IT WONT LET ME
+    for (int i = 0; i < 64; i++) icedfound[i] = false;
+}
+
+typedef struct {
+    int candy;
+    bool icedfound[64];
+} GameSave;
+
+int savegame() {
+    // TODO: save
+    GameSave save = {candy, icedfound};
+    
+    FILE* file = fopen("save.r64s", "wb");
+    if (file == NULL) {
+        printf("could not open file");
+        //perror(strcat("could not open ", path));
+        return 1;
+    }
+
+    size_t num_written = fwrite(&save, sizeof(GameSave), 1, file);
+    if (num_written != 1) {
+        printf("could not open file");
+        //perror(strcat("could not open ", path));
+        return 2;
+    }
+
+    fclose(file);
+
+    printf("saved!");
+
+    return 0;
+}
+
+int loadsave() {
+    // TODO: load save
+    FILE* file = fopen("save.r64s", "rb");
+    if (file == NULL) {
+        printf("could not open file");
+        return 1;
+    }
+
+    GameSave save;
+
+    while (fread(&save, sizeof(save), 1, file) == 1) {
+        printf("READ");
+    }
+
+    fclose(file);
+
+    candy = save.candy;
+    for (int i = 0; i < 64; i++) icedfound[i] = save.icedfound[i];
+    countIcedcream();
+
+    scandy = candy;
+
+    return 0;
+}
+
 Entity spawnIcedoor(float x,float y,float z,float sx,float sy,float sz,int req){
+    bool completedIcedoor = icedcream >= req;
+
     Terrain t={0};
     t.x=x;t.y=y;t.z=z;t.s=1;
     t.mdl=LoadModelFromMesh(GenMeshCube(sx,sy,sz));
@@ -1244,11 +1324,15 @@ Entity spawnIcedoor(float x,float y,float z,float sx,float sy,float sz,int req){
     t.gen=true;
     t.plain=true;
     t.glow=true;
+    t.hide = completedIcedoor;
+    t.nocol = completedIcedoor;
     gm3d.items[gm3d.count]=t;
     Entity e=crEnt(OTYPE_ICDR,x,y,z,sx,sy,sz);
+    e.disabled = completedIcedoor;
     addvar(e.uid,V_ICDR_TERRAI,gm3d.count);
     addvar(e.uid,V_ICDR_REQ,req);
     gm3d.count++;
+
     return e;
 }
 //maps
@@ -1915,83 +1999,6 @@ void loadskin(uint8_t id){
 
 Vector3 v2(Vector3 v){
     return (Vector3){v.x,0,v.z};
-}
-
-int candy = 0;
-int scandy = 0;
-int icedcream = 0;
-int icedcreamid = 0;
-bool icedfound[64] = {};
-
-void countIcedcream() {
-    icedcream = 0;
-    for (int i = 0; i < 64; i++)
-        if (icedfound[i] == true) 
-            icedcream++;
-}
-
-void resetGameVariables() {
-    scandy = 0;
-    candy = 0;
-    scandy = 0;
-    icedcream = 0;
-    //icedfound = {}; // IT WONT LET ME
-    for (int i = 0; i < 64; i++) icedfound[i] = false;
-}
-
-typedef struct {
-    int candy;
-    bool icedfound[64];
-} GameSave;
-
-int savegame() {
-    // TODO: save
-    GameSave save = {candy, icedfound};
-    
-    FILE* file = fopen("save.r64s", "wb");
-    if (file == NULL) {
-        printf("could not open file");
-        //perror(strcat("could not open ", path));
-        return 1;
-    }
-
-    size_t num_written = fwrite(&save, sizeof(GameSave), 1, file);
-    if (num_written != 1) {
-        printf("could not open file");
-        //perror(strcat("could not open ", path));
-        return 2;
-    }
-
-    fclose(file);
-
-    printf("saved!");
-
-    return 0;
-}
-
-int loadsave() {
-    // TODO: load save
-    FILE* file = fopen("save.r64s", "rb");
-    if (file == NULL) {
-        printf("could not open file");
-        return 1;
-    }
-
-    GameSave save;
-
-    while (fread(&save, sizeof(save), 1, file) == 1) {
-        printf("READ");
-    }
-
-    fclose(file);
-
-    candy = save.candy;
-    for (int i = 0; i < 64; i++) icedfound[i] = save.icedfound[i];
-    countIcedcream();
-
-    scandy = candy;
-
-    return 0;
 }
 
 void tomapid(short id){
@@ -3481,7 +3488,7 @@ void stepchar(){
             icedtimer--;
             if(icedtimer==60){
                 icedfound[icedcreamid] = true;
-                icedcream++; //replace this later
+                countIcedcream(); // icedcream++;
                 plrhealth=4;
             }else if(icedtimer==0){
                 plrgotice=false;
@@ -3574,6 +3581,7 @@ void stepchar(){
                                 candy += 10; // i lowkey forgot the candy it gives :P
                             }
                             v->disabled=true;
+                            savegame();
                             break;
                         case OTYPE_WATR:
                             if(isbsbox&&above){
