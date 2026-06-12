@@ -1917,6 +1917,83 @@ Vector3 v2(Vector3 v){
     return (Vector3){v.x,0,v.z};
 }
 
+int candy = 0;
+int scandy = 0;
+int icedcream = 0;
+int icedcreamid = 0;
+bool icedfound[64] = {};
+
+void countIcedcream() {
+    icedcream = 0;
+    for (int i = 0; i < 64; i++)
+        if (icedfound[i] == true) 
+            icedcream++;
+}
+
+void resetGameVariables() {
+    scandy = 0;
+    candy = 0;
+    scandy = 0;
+    icedcream = 0;
+    //icedfound = {}; // IT WONT LET ME
+    for (int i = 0; i < 64; i++) icedfound[i] = false;
+}
+
+typedef struct {
+    int candy;
+    bool icedfound[64];
+} GameSave;
+
+int savegame() {
+    // TODO: save
+    GameSave save = {candy, icedfound};
+    
+    FILE* file = fopen("save.r64s", "wb");
+    if (file == NULL) {
+        printf("could not open file");
+        //perror(strcat("could not open ", path));
+        return 1;
+    }
+
+    size_t num_written = fwrite(&save, sizeof(GameSave), 1, file);
+    if (num_written != 1) {
+        printf("could not open file");
+        //perror(strcat("could not open ", path));
+        return 2;
+    }
+
+    fclose(file);
+
+    printf("saved!");
+
+    return 0;
+}
+
+int loadsave() {
+    // TODO: load save
+    FILE* file = fopen("save.r64s", "rb");
+    if (file == NULL) {
+        printf("could not open file");
+        return 1;
+    }
+
+    GameSave save;
+
+    while (fread(&save, sizeof(save), 1, file) == 1) {
+        printf("READ");
+    }
+
+    fclose(file);
+
+    candy = save.candy;
+    for (int i = 0; i < 64; i++) icedfound[i] = save.icedfound[i];
+    countIcedcream();
+
+    scandy = candy;
+
+    return 0;
+}
+
 void tomapid(short id){
     switch(id){
         case M_TITLE:
@@ -1932,6 +2009,7 @@ void tomapid(short id){
             map_turtle();
             break;
     }
+    savegame();
 }
 
 void particle(uint8_t type,int qty,bool dovel,Vector3 ps,float size){
@@ -2555,24 +2633,6 @@ bool canmove = true;
 bool stillcam = true;
 bool snapcam = false;
 Vector3 snapto = {0};
-
-int candy = 0;
-int scandy = 0;
-int icedcream = 0;
-int icedcreamid = 0;
-bool icedfound[64] = {};
-
-void resetGameVariables() {
-    scandy = 0;
-    candy = 0;
-    icedcream = 0;
-    //icedfound = {}; // IT WONT LET ME
-    for (int i = 0; i < 64; i++) icedfound[i] = false;
-}
-
-void loadsave() {
-    // TODO: load save
-}
 
 void stepchar(){
     bool rightcursor = mouselock||IsMouseButtonDown(MOUSE_BUTTON_RIGHT);
@@ -4494,7 +4554,7 @@ static void UpdateDrawFrame(void){
 
                 resetGameVariables();
                 if (titleselt == 0) { loadsave(); }
-                //tomap = icedcream > 0 ? M_HUB : M_TUTORIAL;
+                tomap = icedcream > 0 ? M_HUB : M_TUTORIAL;
 
                 if(tomap==M_TUTORIAL){
                     tomapx=0;
