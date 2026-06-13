@@ -1521,7 +1521,44 @@ MineTile mineBoard[BOARD_SIZEX][BOARD_SIZEY];
 
 bool mineWon;
 bool mineInteract = true;
-bool faceClick = false;
+bool firstpress = true;
+
+void resetTiles() {
+    mineWon = false;
+    mineInteract = true;
+    firstpress = true;
+    for (int x = 0; x < BOARD_SIZEX; x++) {
+        for (int y = 0; y < BOARD_SIZEY; y++) {
+            MineTile mineTile = mineBoard[x][y];
+            mineTile.loaded = false;
+            mineTile.open = false;
+            mineTile.bomb = false;
+            mineTile.flag = false;
+            mineTile.num = 0;
+
+            int mdl = findvar(mineTile.ent.uid, V_TILE_MDL);
+            gm3d.items[mdl].mdl.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = getMineTexture(0);
+
+            mineTile.loaded = true;
+            mineBoard[x][y] = mineTile;
+        }
+    }
+
+    int mines = 0;
+    while (mines < BOARD_MINES) {
+        int x = rand() % BOARD_SIZEX;
+        int y = rand() % BOARD_SIZEY;
+
+        MineTile mineTile = mineBoard[x][y];
+        if (!mineTile.bomb) {
+            mineTile.bomb = true;
+            mineBoard[x][y] = mineTile;
+            mines++;
+
+            printf("%d %d bomb\n", x, y);
+        }
+    }
+}
 
 void lose(int bx, int by) {
     if (!mineInteract) return;
@@ -1546,13 +1583,30 @@ void lose(int bx, int by) {
     }
 }
 
+void checkwin() {
+    if (!mineInteract) return;
+    int open = 0;
+
+    for (int x = 0; x < BOARD_SIZEX; x++) {
+        for (int y = 0; y < BOARD_SIZEY; y++) {
+            MineTile mineTile = mineBoard[x][y];
+            if (mineTile.open && !mineTile.bomb) open++;
+        }
+    }
+
+    if (open == (BOARD_SIZEX*BOARD_SIZEY) - BOARD_MINES) {
+        mineWon = true;
+        mineInteract = false;
+    }
+}
+
 bool plrpound=false;
 uint64_t poundtimer = 0;
 int otilebx = -1;
 int otileby = -1;
-bool firstpress = true;
 
 void clicktile(int bx, int by, int mdl, bool pound) {
+    checkwin();
     if (!mineInteract) return;
 
     MineTile mineTile = mineBoard[bx][by];
@@ -1741,25 +1795,11 @@ void map_mine(){
     }
 
     // load face
-    faceEnt = spawnFaceEnt(0, TILE_SIZE*2, 0);
+    faceEnt = spawnFaceEnt(0, TILE_SIZE*2, TILE_SIZE * (BOARD_SIZEY-2));
     entlist.items[i] = faceEnt;
     i++;
 
-    int mines = 0;
-    while (mines < BOARD_MINES) {
-        int x = rand() % BOARD_SIZEX;
-        int y = rand() % BOARD_SIZEY;
-
-        MineTile mineTile = mineBoard[x][y];
-        if (!mineTile.bomb) {
-            mineTile.bomb = true;
-            mineBoard[x][y] = mineTile;
-            mines++;
-
-            printf("%d %d bomb\n", x, y);
-        }
-    }
-
+    resetTiles();
 
     //Entity tme = crEnt(OTYPE_TELE,0,44,668.5,24,16,1);
     //entlist.items[i]=tme;i++;
@@ -2635,11 +2675,11 @@ bool wasplrpound = false;
 float faceupdatetime = 0;
 
 void stepchar(){
-    if (faceClick || (!mineInteract && !mineWon) || mineWon) {
-        updateFace(faceClick, false, !mineInteract && !mineWon, mineWon);
+    if ((!mineInteract && !mineWon) || mineWon) {
+        updateFace(false, false, !mineInteract && !mineWon, mineWon);
     } else if (faceupdatetime>=0.15) {
         faceupdatetime = 0;
-        updateFace(faceClick, false, !mineInteract && !mineWon, mineWon);
+        updateFace(false, false, !mineInteract && !mineWon, mineWon);
     } else faceupdatetime+=dt;
     bool rightcursor = mouselock||IsMouseButtonDown(MOUSE_BUTTON_RIGHT);
     float yimh = 0;
@@ -3548,6 +3588,11 @@ void stepchar(){
                             plrpound=false;
 
                             
+                            break;
+                        case OTYPE_FACE:
+                            updateFace(true, false, false, false);
+                            resetTiles();
+
                             break;
                         case OTYPE_TELE:
                             if(!plrdebounce){
@@ -4576,7 +4621,7 @@ static void UpdateDrawFrame(void){
                 //tomap = icedcream > 0 ? M_HUB : M_TUTORIAL;
 
                 tomapx = 0;
-                tomapy = 0;
+                tomapy = 10;
                 tomapz = 0;
                 trstype=0;transition(true);
             }
