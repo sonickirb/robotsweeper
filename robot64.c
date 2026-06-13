@@ -106,8 +106,9 @@ typedef struct {
 #define OTYPE_POWR 9
     #define V_POWR_ID 0
 #define OTYPE_TILE 10
-    #define V_TILE_BOMB 0
-    #define V_TILE_OPEN 1
+    #define V_TILE_MDL  0
+    #define V_TILE_X  1
+    #define V_TILE_Y  2
 typedef struct {
     Vector3 pos;
     Vector3 size;
@@ -1409,38 +1410,51 @@ MineTexture mineTextures[32];
 Texture2D getMineTexture(int textureID) {
     MineTexture mineTex = mineTextures[textureID];
     if (!mineTex.loaded) {
-        Image img = LoadImageFromMemory(".png", tex_tile, sizeof(tex_tile));
+        Image img;
+        if (textureID == 0) img = LoadImageFromMemory(".png", tex_tile, sizeof(tex_tile));
+        if (textureID == 1) img = LoadImageFromMemory(".png", tex_open, sizeof(tex_open));
+        if (textureID == 2) img = LoadImageFromMemory(".png", tex_1, sizeof(tex_1));
+        if (textureID == 3) img = LoadImageFromMemory(".png", tex_2, sizeof(tex_2));
+        if (textureID == 4) img = LoadImageFromMemory(".png", tex_3, sizeof(tex_3));
+        if (textureID == 5) img = LoadImageFromMemory(".png", tex_4, sizeof(tex_4));
+        if (textureID == 6) img = LoadImageFromMemory(".png", tex_5, sizeof(tex_5));
+        if (textureID == 7) img = LoadImageFromMemory(".png", tex_6, sizeof(tex_6));
+        if (textureID == 8) img = LoadImageFromMemory(".png", tex_7, sizeof(tex_7));
+        if (textureID == 9) img = LoadImageFromMemory(".png", tex_8, sizeof(tex_8));
+        if (textureID == 10) img = LoadImageFromMemory(".png", tex_mine, sizeof(tex_mine));
+        if (textureID == 11) img = LoadImageFromMemory(".png", tex_flag, sizeof(tex_flag));
+        if (textureID == 12) img = LoadImageFromMemory(".png", tex_wrong, sizeof(tex_wrong));
+        if (textureID == 13) img = LoadImageFromMemory(".png", tex_themine, sizeof(tex_themine));
         mineTex.tex = LoadTextureFromImage(img);
         SetTextureFilter(mineTex.tex, TEXTURE_FILTER_POINT);
+        //SetTextureWrap(mineTex.tex, TEXTURE_WRAP_CLAMP);
         UnloadImage(img);
 
         mineTex.loaded = true;
+
+        printf("loaded mineTextureID %d \n", textureID);
     }
 
-    mineTextures[textureID] = mineTex; // probably not needed :P
+    mineTextures[textureID] = mineTex;
     return mineTex.tex;
 }
 
 #define TILE_SIZE 10
 #define BOARD_SIZEX 9
 #define BOARD_SIZEY 9
+#define BOARD_MINES 10
 
 Entity spawnTileEnt(float x, float y, float z) {
     Terrain t={0};
     t.x=x;t.y=y;t.z=z;t.s=1;
-    t.mdl=LoadModelFromMesh(GenMeshCube(TILE_SIZE,1,TILE_SIZE));
+    t.mdl=LoadModelFromMesh(GenMeshCubeT(TILE_SIZE,1,TILE_SIZE,10));
     t.mdl.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = getMineTexture(0);
     t.gen=true;
     t.plain=true;
-    t.glow=true;
+    //t.glow=true;
     gm3d.items[gm3d.count]=t;
-    Entity e=crEnt(OTYPE_TILE,x,y,z,1,8,1);
-    // booleans are just 
-    // #define false 0 
-    // #define true 1
-    // so this is fine! (i hope)
-    addvar(e.uid,V_TILE_BOMB,false);
-    addvar(e.uid,V_TILE_OPEN,false);
+    Entity e=crEnt(OTYPE_TILE,x,y,z,TILE_SIZE,5,TILE_SIZE);
+    addvar(e.uid,V_TILE_MDL,gm3d.count);
     gm3d.count++;
 
     return e;
@@ -1449,13 +1463,116 @@ Entity spawnTileEnt(float x, float y, float z) {
 typedef struct MineTile {
     bool loaded;
     Entity ent;
+    bool open;
+    bool bomb;
+    bool flag;
+    int num;
 } MineTile;
 MineTile mineBoard[BOARD_SIZEX][BOARD_SIZEY];
+
+bool mineWon;
+bool mineInteract = true;
+
+void lose(int bx, int by) {
+    if (!mineInteract) return;
+
+    mineInteract = false;
+    mineWon = false;
+    for (int x = 0; x < BOARD_SIZEX; x++) {
+        for (int y = 0; y < BOARD_SIZEY; y++) {
+            int mdl = findvar(mineBoard[x][y].ent.uid, V_TILE_MDL);
+
+            MineTile mineTile = mineBoard[x][y];
+            
+            int textureID = 0;
+            if (mineTile.open) textureID = 1;
+            textureID += mineTile.num;
+            if (mineTile.bomb) textureID = 10;
+            if (mineTile.bomb && mineTile.flag) textureID = 11;
+            if (!mineTile.bomb && mineTile.flag) textureID = 12;
+            if (mineTile.bomb && x == bx && y == by) textureID = 13;
+            gm3d.items[mdl].mdl.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = getMineTexture(textureID);
+        }
+    }
+}
+
+bool plrpound=false;
+uint64_t poundtimer = 0;
+int otilebx = -1;
+int otileby = -1;
+
+void clicktile(int bx, int by, int mdl, bool pound) {
+    if (!mineInteract) return;
+
+    MineTile mineTile = mineBoard[bx][by];
+    
+    if (!mineTile.open) {
+        if (pound) {
+            mineTile.flag = !mineTile.flag;
+            mineBoard[bx][by] = mineTile;
+            int textureID = 0;
+            if (mineTile.flag) textureID = 11;
+            gm3d.items[mdl].mdl.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = getMineTexture(textureID);
+            /*
+            if (mineTile.flag) {
+                otilebx = -1;
+                otileby = -1;
+            }
+            */
+            return;
+        }
+        if (mineTile.flag) return;
+
+        mineTile.open = true;
+
+        if (mineTile.bomb) {
+            lose(bx, by);
+            return;
+        }
+
+        mineTile.num = 0;
+        for (int ox = -1; ox < 2; ox++) {
+            for (int oy = -1; oy < 2; oy++) {
+                int x = bx + ox;
+                int y = by + oy;
+                if (x > -1 && x < BOARD_SIZEX && y > -1 && y < BOARD_SIZEY && !(x == bx && y == by))
+                    if (mineBoard[x][y].bomb == true)
+                        mineTile.num++;
+            }
+        }
+
+        mineBoard[bx][by] = mineTile;
+        int textureID = 0;
+        if (mineTile.open) textureID = 1;
+        textureID += mineTile.num;
+        if (mineTile.flag) textureID = 11;
+        gm3d.items[mdl].mdl.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = getMineTexture(textureID);
+
+        if (mineTile.num < 1) {
+            for (int ox = -1; ox < 2; ox++) {
+                for (int oy = -1; oy < 2; oy++) {
+                    int x = bx + ox;
+                    int y = by + oy;
+                    if (x > -1 && x < BOARD_SIZEX && y > -1 && y < BOARD_SIZEY && !(x == bx && y == by)) {
+                        if (mineBoard[x][y].num == 0) {
+                            //printf("%d \n", mineBoard[x][y].num);
+                            clicktile(x, y, findvar(mineBoard[x][y].ent.uid, V_TILE_MDL), false);
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
 
 void map_mine(){
     setamb(153,142,165,1);
     setsundir2(13,40);
     iswallrad=false;
+    
+    mineWon = false;
+    mineInteract = true;
+
     unloadassets();
     map = M_MINE;
 	Image img = LoadImageFromMemory(".png",tex_sky_void,sizeof(tex_sky_void));
@@ -1524,13 +1641,35 @@ void map_mine(){
     for (int x = 0; x < BOARD_SIZEX; x++) {
         for (int y = 0; y < BOARD_SIZEY; y++) {
             MineTile mineTile;
+            mineTile.loaded = false;
+            mineTile.open = false;
+            mineTile.bomb = false;
+            mineTile.flag = false;
+            mineTile.num = 0;
 
             mineTile.ent = spawnTileEnt((x * TILE_SIZE) - (TILE_SIZE * (BOARD_SIZEX / 2)), 0, (y * TILE_SIZE) - (TILE_SIZE * (BOARD_SIZEY / 2)));
+            addvar(mineTile.ent.uid,V_TILE_X,x);
+            addvar(mineTile.ent.uid,V_TILE_Y,y);
             entlist.items[i] = mineTile.ent;
             i++;
 
             mineTile.loaded = true;
             mineBoard[x][y] = mineTile;
+        }
+    }
+
+    int mines = 0;
+    while (mines < BOARD_MINES) {
+        int x = rand() % (BOARD_SIZEX + 1);
+        int y = rand() % (BOARD_SIZEY + 1);
+
+        MineTile mineTile = mineBoard[x][y];
+        if (!mineTile.bomb) {
+            mineTile.bomb = true;
+            mineBoard[x][y] = mineTile;
+            mines++;
+
+            printf("%d %d bomb\n", x, y);
         }
     }
 
@@ -1565,7 +1704,6 @@ bool plrsliding=false;
 bool plrcrouch=false;
 bool plrattack=false;
 bool plrlongjump=false;
-bool plrpound=false;
 bool plrrolling=false;
 bool plrwallrun=false;
 Vector3 plrwallpoint={0};
@@ -2388,7 +2526,6 @@ RayCollision toilets = {0};
 RayCollision oskibidi = {0};
 float gravmult = 1;
 uint8_t ledgetimer = 0;
-uint8_t poundtimer = 0;
 float sensitivity = 0.5;
 bool plranchored = false;
 uint8_t attacktimer = 0;
@@ -2407,6 +2544,7 @@ bool canmove = true;
 bool stillcam = true;
 bool snapcam = false;
 Vector3 snapto = {0};
+bool wasplrpound = false;
 
 void stepchar(){
     bool rightcursor = mouselock||IsMouseButtonDown(MOUSE_BUTTON_RIGHT);
@@ -3306,7 +3444,16 @@ void stepchar(){
                 if((!v->disabled)&&(ischbox||isbsbox||isgrbox)){
                     switch(v->type){
                         case OTYPE_TILE:
-                            printf("HEY! HI!\n");
+                            int bx = findvar(v->uid, V_TILE_X);
+                            int by = findvar(v->uid, V_TILE_Y);
+                            int mdl = findvar(v->uid, V_TILE_MDL);
+                            if (!(bx == otilebx && by == otileby)) clicktile(bx, by, mdl, wasplrpound);
+                            otilebx = bx;
+                            otileby = by;
+                            wasplrpound=false;
+                            plrpound=false;
+
+                            
                             break;
                         case OTYPE_TELE:
                             if(!plrdebounce){
@@ -3585,6 +3732,8 @@ void stepchar(){
     if(IsKeyPressed(KEY_L)){
         damage();
     }
+
+    wasplrpound = plrpound;
 }
 
 //----------------------------------------------------------------------------------
