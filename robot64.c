@@ -1478,7 +1478,7 @@ Entity spawnTileEnt(float x, float y, float z) {
     t.plain=true;
     //t.glow=true;
     gm3d.items[gm3d.count]=t;
-    Entity e=crEnt(OTYPE_TILE,x,y,z,TILE_SIZE,5,TILE_SIZE);
+    Entity e=crEnt(OTYPE_TILE,x,y,z,TILE_SIZE-2,5,TILE_SIZE-2);
     addvar(e.uid,V_TILE_MDL,gm3d.count);
     gm3d.count++;
 
