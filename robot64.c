@@ -1359,6 +1359,7 @@ void map_mine(){
     bgm = LoadMusicStreamFromMemory(".mp3",mine_bgm,sizeof(mine_bgm));bgm.looping = true;PlayMusicStream(bgm);
     canbgmA=false;
     canbgmW=false;
+    canbgmP=false;
     //bgmP = LoadMusicStreamFromMemory(".ogg",tutorial_bgmP,sizeof(tutorial_bgmP));bgmP.looping = true;PlayMusicStream(bgmP);canbgmP=true;
     img = LoadImageFromMemory(".png",tex_padding,sizeof(tex_padding));
     Texture2D pad = LoadTextureFromImage(img);
@@ -3940,10 +3941,8 @@ static void dotheframecrap(){
         }
     }else{
         for(int i=0;i<9;i++){
-            bgmvols[i]+=((songplay==i?(
-                (songplay==7)?.8
-                :1
-            ):0)-bgmvols[i])*(dt*2);
+            bgmvols[i]+=((songplay==7?.5
+                :1)-bgmvols[i])*(dt*2);
         }
     }
     SetMusicVolume(bgm,bgmvols[0]);UpdateMusicStream(bgm);
