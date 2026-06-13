@@ -109,6 +109,8 @@ typedef struct {
     #define V_TILE_MDL  0
     #define V_TILE_X  1
     #define V_TILE_Y  2
+#define OTYPE_FACE 11
+    #define V_FACE_MDL 0
 typedef struct {
     Vector3 pos;
     Vector3 size;
@@ -302,6 +304,22 @@ const unsigned char tex_themine[]={
 };
 const unsigned char tex_wrong[]={
 #embed "textures/mine/wrong.png"
+};
+
+const unsigned char tex_face[]={
+#embed "textures/mine/face.png"
+};
+const unsigned char tex_faceclick[]={
+#embed "textures/mine/face-click.png"
+};
+const unsigned char tex_faceuhoh[]={
+#embed "textures/mine/face-uhoh.png"
+};
+const unsigned char tex_facecool[]={
+#embed "textures/mine/face-cool.png"
+};
+const unsigned char tex_facedead[]={
+#embed "textures/mine/face-dead.png"
 };
 
 const unsigned char tex_blank[]={
@@ -1425,6 +1443,11 @@ Texture2D getMineTexture(int textureID) {
         if (textureID == 11) img = LoadImageFromMemory(".png", tex_flag, sizeof(tex_flag));
         if (textureID == 12) img = LoadImageFromMemory(".png", tex_wrong, sizeof(tex_wrong));
         if (textureID == 13) img = LoadImageFromMemory(".png", tex_themine, sizeof(tex_themine));
+        if (textureID == 14) img = LoadImageFromMemory(".png", tex_face, sizeof(tex_face));
+        if (textureID == 15) img = LoadImageFromMemory(".png", tex_faceclick, sizeof(tex_faceclick));
+        if (textureID == 16) img = LoadImageFromMemory(".png", tex_faceuhoh, sizeof(tex_faceuhoh));
+        if (textureID == 17) img = LoadImageFromMemory(".png", tex_facecool, sizeof(tex_facecool));
+        if (textureID == 18) img = LoadImageFromMemory(".png", tex_facedead, sizeof(tex_facedead));
         mineTex.tex = LoadTextureFromImage(img);
         SetTextureFilter(mineTex.tex, TEXTURE_FILTER_POINT);
         //SetTextureWrap(mineTex.tex, TEXTURE_WRAP_CLAMP);
@@ -1444,10 +1467,12 @@ Texture2D getMineTexture(int textureID) {
 #define BOARD_SIZEY 9
 #define BOARD_MINES 10
 
+Entity faceEnt;
+
 Entity spawnTileEnt(float x, float y, float z) {
     Terrain t={0};
     t.x=x;t.y=y;t.z=z;t.s=1;
-    t.mdl=LoadModelFromMesh(GenMeshCubeT(TILE_SIZE,1,TILE_SIZE,10));
+    t.mdl=LoadModelFromMesh(GenMeshCube(TILE_SIZE,1,TILE_SIZE));
     t.mdl.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = getMineTexture(0);
     t.gen=true;
     t.plain=true;
@@ -1458,6 +1483,30 @@ Entity spawnTileEnt(float x, float y, float z) {
     gm3d.count++;
 
     return e;
+}
+Entity spawnFaceEnt(float x, float y, float z) {
+    Terrain t={0};
+    t.x=x;t.y=y;t.z=z;t.s=1;
+    t.mdl=LoadModelFromMesh(GenMeshCube(TILE_SIZE * 1.5,TILE_SIZE * 1.5,1));
+    t.mdl.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = getMineTexture(14);
+    t.gen=true;
+    t.plain=true;
+    //t.glow=true;
+    gm3d.items[gm3d.count]=t;
+    Entity e=crEnt(OTYPE_FACE,x,y,z,TILE_SIZE * 1.5,TILE_SIZE * 1.5,5);
+    addvar(e.uid,V_FACE_MDL,gm3d.count);
+    gm3d.count++;
+
+    return e;
+}
+void updateFace(bool click, bool uhoh, bool lost, bool won) {
+    int textureID = 14;
+    if (click) textureID++;
+    if (uhoh) textureID = 16;
+    if (won) textureID = 17;
+    if (lost) textureID = 18;
+
+    gm3d.items[(int)findvar(faceEnt.uid, V_FACE_MDL)].mdl.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = getMineTexture(textureID);
 }
 
 typedef struct MineTile {
@@ -1472,6 +1521,7 @@ MineTile mineBoard[BOARD_SIZEX][BOARD_SIZEY];
 
 bool mineWon;
 bool mineInteract = true;
+bool faceClick = false;
 
 void lose(int bx, int by) {
     if (!mineInteract) return;
@@ -1522,6 +1572,7 @@ void clicktile(int bx, int by, int mdl, bool pound) {
             return;
         }
         if (mineTile.flag) return;
+        updateFace(false, true, false, false);
 
         mineTile.open = true;
 
@@ -1657,6 +1708,11 @@ void map_mine(){
             mineBoard[x][y] = mineTile;
         }
     }
+
+    // load face
+    faceEnt = spawnFaceEnt(0, TILE_SIZE*2, 0);
+    entlist.items[i] = faceEnt;
+    i++;
 
     int mines = 0;
     while (mines < BOARD_MINES) {
@@ -2545,8 +2601,15 @@ bool stillcam = true;
 bool snapcam = false;
 Vector3 snapto = {0};
 bool wasplrpound = false;
+float faceupdatetime = 0;
 
 void stepchar(){
+    if (faceClick || (!mineInteract && !mineWon) || mineWon) {
+        updateFace(faceClick, false, !mineInteract && !mineWon, mineWon);
+    } else if (faceupdatetime>=0.15) {
+        faceupdatetime = 0;
+        updateFace(faceClick, false, !mineInteract && !mineWon, mineWon);
+    } else faceupdatetime+=dt;
     bool rightcursor = mouselock||IsMouseButtonDown(MOUSE_BUTTON_RIGHT);
     float yimh = 0;
     float yimv = 0;
