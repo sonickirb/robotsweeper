@@ -46,6 +46,10 @@ const Dialog talks[] = {
     #include "dialogs.txt"
 };
 
+#define TERRAIN_ITEMS_COUNT 256
+#define ENTITY_COUNT 256
+#define VARIABLE_COUNT 2048
+
 typedef struct {
     float x;
     float y;
@@ -71,7 +75,7 @@ typedef struct {
     Matrix mat;
 } Terrain;
 typedef struct {
-    Terrain items[11000];
+    Terrain items[TERRAIN_ITEMS_COUNT];
     int count;
 } gm3dlist;
 typedef struct {
@@ -120,13 +124,13 @@ typedef struct {
     bool disabled;
 } Entity;
 typedef struct {
-    Entity items[11000];
+    Entity items[ENTITY_COUNT];
     int count;
 } EntTL;
 typedef struct {
-    float vals[2048*10]; //The values (obviously) (only numbers cuz im dumb)
-    unsigned short vids[2048*10]; //ID of variable, will use definitions for variable names
-    unsigned short vuid[2048*10]; //The owner of the variable's unique ID
+    float vals[VARIABLE_COUNT]; //The values (obviously) (only numbers cuz im dumb)
+    unsigned short vids[VARIABLE_COUNT]; //ID of variable, will use definitions for variable names
+    unsigned short vuid[VARIABLE_COUNT]; //The owner of the variable's unique ID
     int count;
 } EntVL;
 #define PAR_MAX 64
@@ -1158,7 +1162,7 @@ Matrix MatrixRotateXYZa(Vector3 rot){
     deeznuts = MatrixMultiply(deeznuts,MatrixRotateXYZ((Vector3){0,rot.y,0}));
     return deeznuts;
 }
-Matrix trgetm(uint32_t i){
+Matrix trgetm(uint16_t i){
     Matrix deeznuts = MatrixIdentity();
     deeznuts = MatrixMultiply(deeznuts,MatrixScale(gm3d.items[i].s*gm3d.items[i].sx,
                                                    gm3d.items[i].s*gm3d.items[i].sy,
@@ -1549,8 +1553,8 @@ Texture2D getMineTexture(int textureID) {
 }
 
 #define TILE_SIZE 10
-#define BOARD_SIZEX 80
-#define BOARD_SIZEY 80
+#define BOARD_SIZEX 100
+#define BOARD_SIZEY 100
 #define BOARD_MINES 1000
 
 Entity faceEnt;
