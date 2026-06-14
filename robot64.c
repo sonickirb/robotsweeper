@@ -71,7 +71,7 @@ typedef struct {
     Matrix mat;
 } Terrain;
 typedef struct {
-    Terrain items[256];
+    Terrain items[11000];
     int count;
 } gm3dlist;
 typedef struct {
@@ -120,13 +120,13 @@ typedef struct {
     bool disabled;
 } Entity;
 typedef struct {
-    Entity items[256];
+    Entity items[11000];
     int count;
 } EntTL;
 typedef struct {
-    float vals[2048]; //The values (obviously) (only numbers cuz im dumb)
-    unsigned short vids[2048]; //ID of variable, will use definitions for variable names
-    unsigned short vuid[2048]; //The owner of the variable's unique ID
+    float vals[2048*10]; //The values (obviously) (only numbers cuz im dumb)
+    unsigned short vids[2048*10]; //ID of variable, will use definitions for variable names
+    unsigned short vuid[2048*10]; //The owner of the variable's unique ID
     int count;
 } EntVL;
 #define PAR_MAX 64
@@ -1114,7 +1114,7 @@ Mesh GenMeshPlaneT(float width, float length, int resX, int resZ, float studsx, 
 
     return mesh;
 }
-unsigned short nextuid = 0;
+unsigned int nextuid = 0;
 Entity crEnt(unsigned short t,float x,float y,float z,float sx,float sy,float sz){
     Entity e = {0};
     e.pos = (Vector3){x,y,z};
@@ -1158,7 +1158,7 @@ Matrix MatrixRotateXYZa(Vector3 rot){
     deeznuts = MatrixMultiply(deeznuts,MatrixRotateXYZ((Vector3){0,rot.y,0}));
     return deeznuts;
 }
-Matrix trgetm(uint8_t i){
+Matrix trgetm(uint32_t i){
     Matrix deeznuts = MatrixIdentity();
     deeznuts = MatrixMultiply(deeznuts,MatrixScale(gm3d.items[i].s*gm3d.items[i].sx,
                                                    gm3d.items[i].s*gm3d.items[i].sy,
@@ -1549,9 +1549,9 @@ Texture2D getMineTexture(int textureID) {
 }
 
 #define TILE_SIZE 10
-#define BOARD_SIZEX 9
-#define BOARD_SIZEY 9
-#define BOARD_MINES 10
+#define BOARD_SIZEX 80
+#define BOARD_SIZEY 80
+#define BOARD_MINES 1000
 
 Entity faceEnt;
 
@@ -1866,8 +1866,12 @@ void map_mine(){
     i=0;
     
     // load tiles
+    int dbgtiles = 0;
     for (int x = 0; x < BOARD_SIZEX; x++) {
         for (int y = 0; y < BOARD_SIZEY; y++) {
+            dbgtiles++;
+            printf("making tile %d \n", dbgtiles);
+
             MineTile mineTile;
             mineTile.loaded = false;
             mineTile.open = false;
