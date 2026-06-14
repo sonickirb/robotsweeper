@@ -5109,6 +5109,7 @@ static void UpdateDrawFrame(void){
         r64text(TextFormat("Robot Sweeper 64 Recompiled WIP v2 (https://github.com/sonickirb/robotsweeper)\nterrain count: %i\nentity count: %i",gm3d.count,entlist.count),20,20,20,0,0,WHITE);
         r64text(TextFormat("campos: %.2f, %.2f, %.2f",camera.position.x,camera.position.y,camera.position.z),20,100,20,0,0,WHITE);
         r64text(TextFormat("FPS: %.2f", 1 / dt),20,120,20,0,0,WHITE);
+        //r64text(TextFormat("%d", malloced_memory_usage),20,120,40,0,0,WHITE);
         //r64text(TextFormat("lastcampos: %.2f, %.2f, %.2f",lastcampos.x,lastcampos.y,lastcampos.z),20,110,20,0,0,WHITE);
         //for (i=0;i<activeSounds.count;i++){
         //    struct SoundInstance *s = &activeSounds.instances[i];
