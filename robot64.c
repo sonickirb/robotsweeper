@@ -322,6 +322,67 @@ const unsigned char tex_facedead[]={
 #embed "textures/mine/face-dead.png"
 };
 
+const unsigned char tex_1_dark[]={
+#embed "textures/mine/dark/1.png"
+};
+const unsigned char tex_2_dark[]={
+#embed "textures/mine/dark/2.png"
+};
+const unsigned char tex_3_dark[]={
+#embed "textures/mine/dark/3.png"
+};
+const unsigned char tex_4_dark[]={
+#embed "textures/mine/dark/4.png"
+};
+const unsigned char tex_5_dark[]={
+#embed "textures/mine/dark/5.png"
+};
+const unsigned char tex_6_dark[]={
+#embed "textures/mine/dark/6.png"
+};
+const unsigned char tex_7_dark[]={
+#embed "textures/mine/dark/7.png"
+};
+const unsigned char tex_8_dark[]={
+#embed "textures/mine/dark/8.png"
+};
+
+const unsigned char tex_tile_dark[]={
+#embed "textures/mine/dark/tile.png"
+};
+const unsigned char tex_open_dark[]={
+#embed "textures/mine/dark/open.png"
+};
+
+const unsigned char tex_flag_dark[]={
+#embed "textures/mine/dark/flag.png"
+};
+const unsigned char tex_mine_dark[]={
+#embed "textures/mine/dark/mine.png"
+};
+const unsigned char tex_themine_dark[]={
+#embed "textures/mine/dark/themine.png"
+};
+const unsigned char tex_wrong_dark[]={
+#embed "textures/mine/dark/wrong.png"
+};
+
+const unsigned char tex_face_dark[]={
+#embed "textures/mine/dark/face.png"
+};
+const unsigned char tex_faceclick_dark[]={
+#embed "textures/mine/dark/face-click.png"
+};
+const unsigned char tex_faceuhoh_dark[]={
+#embed "textures/mine/dark/face-uhoh.png"
+};
+const unsigned char tex_facecool_dark[]={
+#embed "textures/mine/dark/face-cool.png"
+};
+const unsigned char tex_facedead_dark[]={
+#embed "textures/mine/dark/face-dead.png"
+};
+
 const unsigned char tex_blank[]={
 #embed "textures/blank.png"
 };
@@ -1425,10 +1486,15 @@ typedef struct MineTexture {
 } MineTexture;
 MineTexture mineTextures[32];
 
+int theme = 0;
+#define MINE_TEXTURE_COUNT 19
+
 Texture2D getMineTexture(int textureID) {
     MineTexture mineTex = mineTextures[textureID];
     if (!mineTex.loaded) {
         Image img;
+        textureID += MINE_TEXTURE_COUNT * theme;
+        // default
         if (textureID == 0) img = LoadImageFromMemory(".png", tex_tile, sizeof(tex_tile));
         if (textureID == 1) img = LoadImageFromMemory(".png", tex_open, sizeof(tex_open));
         if (textureID == 2) img = LoadImageFromMemory(".png", tex_1, sizeof(tex_1));
@@ -1448,6 +1514,26 @@ Texture2D getMineTexture(int textureID) {
         if (textureID == 16) img = LoadImageFromMemory(".png", tex_faceuhoh, sizeof(tex_faceuhoh));
         if (textureID == 17) img = LoadImageFromMemory(".png", tex_facecool, sizeof(tex_facecool));
         if (textureID == 18) img = LoadImageFromMemory(".png", tex_facedead, sizeof(tex_facedead));
+        // dark
+        if (textureID == 0+MINE_TEXTURE_COUNT) img = LoadImageFromMemory(".png", tex_tile_dark, sizeof(tex_tile_dark));
+        if (textureID == 1+MINE_TEXTURE_COUNT) img = LoadImageFromMemory(".png", tex_open_dark, sizeof(tex_open_dark));
+        if (textureID == 2+MINE_TEXTURE_COUNT) img = LoadImageFromMemory(".png", tex_1_dark, sizeof(tex_1_dark));
+        if (textureID == 3+MINE_TEXTURE_COUNT) img = LoadImageFromMemory(".png", tex_2_dark, sizeof(tex_2_dark));
+        if (textureID == 4+MINE_TEXTURE_COUNT) img = LoadImageFromMemory(".png", tex_3_dark, sizeof(tex_3_dark));
+        if (textureID == 5+MINE_TEXTURE_COUNT) img = LoadImageFromMemory(".png", tex_4_dark, sizeof(tex_4_dark));
+        if (textureID == 6+MINE_TEXTURE_COUNT) img = LoadImageFromMemory(".png", tex_5_dark, sizeof(tex_5_dark));
+        if (textureID == 7+MINE_TEXTURE_COUNT) img = LoadImageFromMemory(".png", tex_6_dark, sizeof(tex_6_dark));
+        if (textureID == 8+MINE_TEXTURE_COUNT) img = LoadImageFromMemory(".png", tex_7_dark, sizeof(tex_7_dark));
+        if (textureID == 9+MINE_TEXTURE_COUNT) img = LoadImageFromMemory(".png", tex_8_dark, sizeof(tex_8_dark));
+        if (textureID == 10+MINE_TEXTURE_COUNT) img = LoadImageFromMemory(".png", tex_mine_dark, sizeof(tex_mine_dark));
+        if (textureID == 11+MINE_TEXTURE_COUNT) img = LoadImageFromMemory(".png", tex_flag_dark, sizeof(tex_flag_dark));
+        if (textureID == 12+MINE_TEXTURE_COUNT) img = LoadImageFromMemory(".png", tex_wrong_dark, sizeof(tex_wrong_dark));
+        if (textureID == 13+MINE_TEXTURE_COUNT) img = LoadImageFromMemory(".png", tex_themine_dark, sizeof(tex_themine_dark));
+        if (textureID == 14+MINE_TEXTURE_COUNT) img = LoadImageFromMemory(".png", tex_face_dark, sizeof(tex_face_dark));
+        if (textureID == 15+MINE_TEXTURE_COUNT) img = LoadImageFromMemory(".png", tex_faceclick_dark, sizeof(tex_faceclick_dark));
+        if (textureID == 16+MINE_TEXTURE_COUNT) img = LoadImageFromMemory(".png", tex_faceuhoh_dark, sizeof(tex_faceuhoh_dark));
+        if (textureID == 17+MINE_TEXTURE_COUNT) img = LoadImageFromMemory(".png", tex_facecool_dark, sizeof(tex_facecool_dark));
+        if (textureID == 18+MINE_TEXTURE_COUNT) img = LoadImageFromMemory(".png", tex_facedead_dark, sizeof(tex_facedead_dark));
         mineTex.tex = LoadTextureFromImage(img);
         SetTextureFilter(mineTex.tex, TEXTURE_FILTER_POINT);
         //SetTextureWrap(mineTex.tex, TEXTURE_WRAP_CLAMP);
@@ -4788,9 +4874,9 @@ static void UpdateDrawFrame(void){
             float btposx = framex+framesize*.8;
             float slidersize = sh*.08;
             float sliderbgsize = framesize*.05;
-            float sliderposy = framey+(framesize*.54)+(btsize/2);
+            float sliderposy = framey+(framesize*.64)+(btsize/2);
 
-            float volumeSliderPositionY = framey + (framesize * .74) + (btsize/2);
+            float volumeSliderPositionY = framey + (framesize * .84) + (btsize/2);
             
             bool ishovering = false;
             switch(pausemenu){
@@ -4850,7 +4936,7 @@ static void UpdateDrawFrame(void){
                     break;
                 case 1:
                     ishovering = mod(relmouse,framesize*.1)<=framesize*.09
-                        &&mousehover>-1&&mousehover<2
+                        &&mousehover>-1&&mousehover<3
                         &&m.x>=framex&&m.x<=framex+framesize;
                     if(ishovering){
                         pauseselt=mousehover;
@@ -4862,13 +4948,27 @@ static void UpdateDrawFrame(void){
                     r64text("Follow Camera",sw2,framey+(framesize*.34),btsize,.5,0,WHITE);
                     DrawTexturePro(t_3dUI,(Rectangle){stillcam?128:0,128,128,128},(Rectangle){btposx,framey+(framesize*.34),btsize,btsize},(Vector2){0},0,WHITE);
                     
-                    r64text("Sensitivity:",sw2,framey+(framesize*.44),btsize,.5,0,(Color){200,200,200,255});
+                    char themeButtonText[64];
+                    int ti = 0;
+                    char themeText[] = "Theme: ";
+                    for (int i = 0; i < 7; i++) {
+                        themeButtonText[ti] = themeText[i];
+                        ti++;
+                    }
+                    char* themeIDText = (theme==0 ? "3.1" : "Dark 3.1");
+                    for (int i = 0; i < 16; i++) {
+                        themeButtonText[ti] = themeIDText[i];
+                        ti++;
+                    }
+                    r64text(themeButtonText,sw2,framey+(framesize*.44),btsize,.5,0,WHITE);
+                    
+                    r64text("Sensitivity:",sw2,framey+(framesize*.56),btsize,.5,0,(Color){200,200,200,255});
                     DrawRectangleV((Vector2){sw*.4,sliderposy-(sliderbgsize/2)},(Vector2){sw*.2,sliderbgsize},GREEN);
                     DrawTexturePro(
                     t_slider,(Rectangle){0,0,256,256},(Rectangle){sw*.4+sensitivity*sw*.2-slidersize/2,sliderposy,slidersize,slidersize},(Vector2){0},0,WHITE
                     );
 
-                    r64text("Volume:",sw2,framey+(framesize*.64),btsize,.5,0,(Color){200,200,200,255});
+                    r64text("Volume:",sw2,framey+(framesize*.76),btsize,.5,0,(Color){200,200,200,255});
                     DrawRectangleV((Vector2){sw*.4,volumeSliderPositionY-(sliderbgsize/2)},(Vector2){sw*.2,sliderbgsize},GREEN);
                     DrawTexturePro(
                     t_slider,(Rectangle){0,0,256,256},(Rectangle){sw*.4+gameVolume*sw*.2-slidersize/2,volumeSliderPositionY,slidersize,slidersize},(Vector2){0},0,WHITE
