@@ -47,9 +47,9 @@ const Dialog talks[] = {
     #include "dialogs.txt"
 };
 
-#define TERRAIN_ITEMS_COUNT 10256
-#define ENTITY_COUNT 10256
-#define VARIABLE_COUNT 30256
+#define TERRAIN_ITEMS_COUNT 1024
+#define ENTITY_COUNT 1024
+#define VARIABLE_COUNT 2048
 
 typedef struct {
     float x;
