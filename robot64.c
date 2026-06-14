@@ -1515,16 +1515,16 @@ typedef struct MineTexture {
     bool loaded;
     Texture2D tex;
 } MineTexture;
-MineTexture mineTextures[32];
+MineTexture mineTextures[64];
 
 int theme = 0;
 #define MINE_TEXTURE_COUNT 19
 
 Texture2D getMineTexture(int textureID) {
+    textureID += MINE_TEXTURE_COUNT * theme;
     MineTexture mineTex = mineTextures[textureID];
     if (!mineTex.loaded) {
         Image img;
-        textureID += MINE_TEXTURE_COUNT * theme;
         // default
         if (textureID == 0) img = LoadImageFromMemory(".png", tex_tile, sizeof(tex_tile));
         if (textureID == 1) img = LoadImageFromMemory(".png", tex_open, sizeof(tex_open));
@@ -1580,9 +1580,11 @@ Texture2D getMineTexture(int textureID) {
 }
 
 #define TILE_SIZE 10
-#define BOARD_SIZEX 9
-#define BOARD_SIZEY 9
-#define BOARD_MINES 10
+int BOARD_SIZEX = 32;
+int BOARD_SIZEY = 9;
+int BOARD_MINES = 10;
+
+int BOARD_DIFFICULTY = 0;
 
 Entity faceEnt;
 
@@ -1634,7 +1636,7 @@ typedef struct MineTile {
     bool flag;
     int num;
 } MineTile;
-MineTile mineBoard[BOARD_SIZEX][BOARD_SIZEY];
+MineTile mineBoard[32][32];
 
 bool mineWon;
 bool mineInteract = true;
@@ -1694,11 +1696,7 @@ void resetTiles() {
     }
 }
 
-void lose(int bx, int by) {
-    if (!mineInteract) return;
-
-    mineInteract = false;
-    mineWon = false;
+void updateTileMats(int bx, int by) {
     for (int x = 0; x < BOARD_SIZEX; x++) {
         for (int y = 0; y < BOARD_SIZEY; y++) {
             int mdl = findvar(mineBoard[x][y].ent.uid, V_TILE_MDL);
@@ -1708,6 +1706,14 @@ void lose(int bx, int by) {
             gm3d.items[mdl].mdl.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = getMineTexture(getTileTextureID(x, y, bx, by));
         }
     }
+}
+
+void lose(int bx, int by) {
+    if (!mineInteract) return;
+
+    mineInteract = false;
+    mineWon = false;
+    updateTileMats(bx, by);
 }
 
 void checkwin() {
@@ -1827,6 +1833,22 @@ void map_mine(){
     setamb(153,142,165,1);
     setsundir2(13,40);
     iswallrad=false;
+
+    BOARD_SIZEX = 9;
+    BOARD_SIZEY = 9;
+    BOARD_MINES = 10;
+
+    if (BOARD_DIFFICULTY == 1) {
+        BOARD_SIZEX = 16;
+        BOARD_SIZEY = 16;
+        BOARD_MINES = 40;
+    }
+    if (BOARD_DIFFICULTY == 2) {
+        BOARD_SIZEX = 30;
+        BOARD_SIZEY = 16;
+        BOARD_MINES = 99;
+    }
+
     
     mineWon = false;
     mineInteract = true;
@@ -5048,6 +5070,7 @@ static void UpdateDrawFrame(void){
                             case 2:
                                 theme++;
                                 if (theme > 1) theme = 0;
+                                updateTileMats(-1, -1);
                                 break;
                             default:
                                 PlaySound(s_cancel);

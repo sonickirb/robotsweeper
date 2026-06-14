@@ -188,7 +188,7 @@ ifeq ($(BUILD_MODE),DEBUG)
 else
     ifeq ($(PLATFORM),PLATFORM_WEB)
         ifeq ($(BUILD_WEB_ASYNCIFY),TRUE)
-            CFLAGS += -O3
+            CFLAGS += -O2
         else
             CFLAGS += -Os
         endif
@@ -197,7 +197,7 @@ else
             CFLAGS += -O2
         else
             #CFLAGS += -s -O2
-            CFLAGS += -s -O3
+            CFLAGS += -s -O2
         endif
     endif
 endif
