@@ -1523,6 +1523,23 @@ bool mineWon;
 bool mineInteract = true;
 bool firstpress = true;
 
+int getTileTextureID(int x, int y, int bx, int by) {
+    MineTile mineTile = mineBoard[x][y];
+    if (!mineTile.loaded) return;
+
+    int textureID = 0;
+    if (mineTile.open) textureID = 1;
+    textureID += mineTile.num;
+    if (mineTile.flag) textureID = 11;
+    if (!mineInteract && !mineWon) {
+        if (mineTile.bomb) textureID = 10;
+        if (mineTile.bomb && mineTile.flag) textureID = 11;
+        if (!mineTile.bomb && mineTile.flag) textureID = 12;
+        if (mineTile.bomb && x == bx && y == by) textureID = 13;
+    }
+    return textureID;
+}
+
 void resetTiles() {
     mineWon = false;
     mineInteract = true;
@@ -1571,14 +1588,7 @@ void lose(int bx, int by) {
 
             MineTile mineTile = mineBoard[x][y];
             
-            int textureID = 0;
-            if (mineTile.open) textureID = 1;
-            textureID += mineTile.num;
-            if (mineTile.bomb) textureID = 10;
-            if (mineTile.bomb && mineTile.flag) textureID = 11;
-            if (!mineTile.bomb && mineTile.flag) textureID = 12;
-            if (mineTile.bomb && x == bx && y == by) textureID = 13;
-            gm3d.items[mdl].mdl.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = getMineTexture(textureID);
+            gm3d.items[mdl].mdl.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = getMineTexture(getTileTextureID(x, y, bx, by));
         }
     }
 }
@@ -1677,11 +1687,7 @@ void clicktile(int bx, int by, int mdl, bool pound) {
         }
 
         mineBoard[bx][by] = mineTile;
-        int textureID = 0;
-        if (mineTile.open) textureID = 1;
-        textureID += mineTile.num;
-        if (mineTile.flag) textureID = 11;
-        gm3d.items[mdl].mdl.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = getMineTexture(textureID);
+        gm3d.items[mdl].mdl.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = getMineTexture(getTileTextureID(bx, by, bx, by));
 
         if (mineTile.num < 1) {
             for (int ox = -1; ox < 2; ox++) {
