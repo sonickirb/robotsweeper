@@ -47,9 +47,9 @@ const Dialog talks[] = {
     #include "dialogs.txt"
 };
 
-#define TERRAIN_ITEMS_COUNT 256
-#define ENTITY_COUNT 256
-#define VARIABLE_COUNT 2048
+#define TERRAIN_ITEMS_COUNT 10256
+#define ENTITY_COUNT 10256
+#define VARIABLE_COUNT 30256
 
 typedef struct {
     float x;
@@ -1135,6 +1135,7 @@ void addvar(unsigned short uid,unsigned short nam,float val){
     entlistV.vids[entlistV.count]=nam;
     entlistV.vals[entlistV.count]=val;
     entlistV.count++;
+    printf("%d \n", entlistV.count);
 }
 float findvar(unsigned short uid,unsigned short nam){
     if(entlistV.count>0){
@@ -1612,7 +1613,7 @@ Entity spawnFaceEnt(float x, float y, float z) {
     t.plain=true;
     //t.glow=true;
     gm3d.items[gm3d.count]=t;
-    Entity e=crEnt(OTYPE_FACE,x,y,z,TILE_SIZE * 1.5,TILE_SIZE * 1.5,5);
+    Entity e=crEnt(OTYPE_FACE,x,y,z,TILE_SIZE * 1.5,TILE_SIZE * 1.5,1);
     addvar(e.uid,V_FACE_MDL,gm3d.count);
     gm3d.count++;
 
@@ -1634,9 +1635,9 @@ typedef struct MineTile {
     bool open;
     bool bomb;
     bool flag;
-    int num;
+    uint8_t num;
 } MineTile;
-MineTile mineBoard[32][32];
+MineTile mineBoard[100][100];
 
 bool mineWon;
 bool mineInteract = true;
@@ -1691,7 +1692,7 @@ void resetTiles() {
             mineBoard[x][y] = mineTile;
             mines++;
 
-            printf("%d %d bomb\n", x, y);
+            //printf("%d %d bomb\n", x, y);
         }
     }
 }
@@ -1804,7 +1805,7 @@ void clicktile(int bx, int by, int mdl, bool pound) {
                 int x = bx + ox;
                 int y = by + oy;
                 if (x > -1 && x < BOARD_SIZEX && y > -1 && y < BOARD_SIZEY && !(x == bx && y == by))
-                    if (mineBoard[x][y].bomb == true)
+                    if (mineBoard[x][y].bomb)
                         mineTile.num++;
             }
         }
@@ -1818,15 +1819,41 @@ void clicktile(int bx, int by, int mdl, bool pound) {
                     int x = bx + ox;
                     int y = by + oy;
                     if (x > -1 && x < BOARD_SIZEX && y > -1 && y < BOARD_SIZEY && !(x == bx && y == by)) {
-                        if (mineBoard[x][y].num == 0) {
-                            //printf("%d \n", mineBoard[x][y].num);
+                        if (mineBoard[x][y].num == 0)
                             clicktile(x, y, findvar(mineBoard[x][y].ent.uid, V_TILE_MDL), false);
+                    }
+                }
+            }
+        }
+    } else {
+        if (pound) {
+            int neighbourflags = 0;
+            for (int ox = -1; ox < 2; ox++) {
+                for (int oy = -1; oy < 2; oy++) {
+                    int x = bx + ox;
+                    int y = by + oy;
+                    if (x > -1 && x < BOARD_SIZEX && y > -1 && y < BOARD_SIZEY && !(x == bx && y == by))
+                        if (mineBoard[x][y].flag)
+                            neighbourflags++;
+                }
+            }
+
+            if (neighbourflags == mineTile.num) {
+                for (int ox = -1; ox < 2; ox++) {
+                    for (int oy = -1; oy < 2; oy++) {
+                        int x = bx + ox;
+                        int y = by + oy;
+                        if (x > -1 && x < BOARD_SIZEX && y > -1 && y < BOARD_SIZEY && !(x == bx && y == by)) {
+                            if (!mineBoard[x][y].open)
+                                clicktile(x, y, findvar(mineBoard[x][y].ent.uid, V_TILE_MDL), false);
                         }
                     }
                 }
             }
         }
     }
+
+    checkwin();
 }
 
 void map_mine(){
@@ -1847,6 +1874,11 @@ void map_mine(){
         BOARD_SIZEX = 30;
         BOARD_SIZEY = 16;
         BOARD_MINES = 99;
+    }
+    if (BOARD_DIFFICULTY == 3) {
+        BOARD_SIZEX = 100;
+        BOARD_SIZEY = 100;
+        BOARD_MINES = 2500;
     }
 
     
@@ -1874,7 +1906,7 @@ void map_mine(){
     Terrain tmp = {0};
     tmp.x = 0;
     tmp.y = 0;
-    tmp.z = TILE_SIZE * ((BOARD_SIZEX / 2) + 1);
+    tmp.z = TILE_SIZE * ((BOARD_SIZEY / 2) + 1);
     tmp.s = 1;
     tmp.mdl = LoadModelFromMesh(GenMeshCubeT(TILE_SIZE * (BOARD_SIZEX + 2), 2, TILE_SIZE, 8));
     tmp.mdl.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = pad;
@@ -1884,7 +1916,7 @@ void map_mine(){
     tmp = (Terrain){0};
     tmp.x = 0;
     tmp.y = 0;
-    tmp.z = -(TILE_SIZE * ((BOARD_SIZEX / 2) + 1));
+    tmp.z = -(TILE_SIZE * ((BOARD_SIZEY / 2) + 1));
     tmp.s = 1;
     tmp.mdl = LoadModelFromMesh(GenMeshCubeT(TILE_SIZE * (BOARD_SIZEX + 2), 2, TILE_SIZE, 8));
     tmp.mdl.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = pad;
@@ -3750,6 +3782,7 @@ void stepchar(){
                 if((!v->disabled)&&(ischbox||isbsbox||isgrbox)){
                     switch(v->type){
                         case OTYPE_TILE:
+                            if (isbsbox && !ischbox && !isgrbox) break;
                             if (plrjumping) break;
                             int bx = findvar(v->uid, V_TILE_X);
                             int by = findvar(v->uid, V_TILE_Y);
@@ -4792,17 +4825,18 @@ static void UpdateDrawFrame(void){
                 tomap = M_MINE;
 
                 resetGameVariables();
-                if (titleselt == 0) { loadsave(); }
-                //tomap = icedcream > 0 ? M_HUB : M_TUTORIAL;
+                loadsave();
+
+                BOARD_DIFFICULTY = titleselt;
 
                 tomapx = 0;
                 tomapy = 10;
                 tomapz = 0;
                 trstype=0;transition(true);
             }
-            r64text("Continue",sw2,sh*.7f,sh*0.06f,.5f,0,WHITE);
-            r64text("New Game",sw2,sh*.8f,sh*0.06f,.5f,0,WHITE);
-            r64text("Speedrun",sw2,sh*.9f,sh*0.06f,.5f,0,WHITE);
+            r64text("Beginner",sw2,sh*.7f,sh*0.06f,.5f,0,WHITE);
+            r64text("Intermediate",sw2,sh*.8f,sh*0.06f,.5f,0,WHITE);
+            r64text("Expert",sw2,sh*.9f,sh*0.06f,.5f,0,WHITE);
             float rot = mod(GetTime()*80.0f,360);
             Vector2 off = Vector2Scale(fixrotpos2(rot),sh*-0.03f);
             DrawTextureEx(spinny,Vector2Add((Vector2){(sw*.35f)+(sh*0.03f),(sh*.73f)+(titleselt*(sh*.1f))},off),rot,0.0078125f*(sh*0.06f),WHITE);
@@ -5005,8 +5039,14 @@ static void UpdateDrawFrame(void){
                                 pauseselt=0;
                                 break;
                             case 6:
-                                pausemenu=3;
-                                pauseselt=0;
+                                paused = !paused;
+                                
+                                BOARD_DIFFICULTY = 3;
+                                tomap = M_MINE;
+                                trstype = 0;
+                                transition(true);
+
+                                ResumeMusicStream(s_slide);
                                 break;
                             default:
                                 PlaySound(s_cancel);
