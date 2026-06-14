@@ -4445,6 +4445,7 @@ int main(){
 }
 int8_t blink = 10;
 int8_t candoffset = 0;
+uint8_t squidwardCounter = 0;
 Rectangle pauserec = {0};
 static void dotheframecrap(){
     dt = (dt==-1)?(1.0f/60):GetFrameTime();
@@ -5039,14 +5040,20 @@ static void UpdateDrawFrame(void){
                                 pauseselt=0;
                                 break;
                             case 6:
-                                paused = !paused;
-                                
-                                BOARD_DIFFICULTY = 3;
-                                tomap = M_MINE;
-                                trstype = 0;
-                                transition(true);
+                                if (squidwardCounter >= 100) {
+                                    squidwardCounter = 0;
+                                    paused = !paused;
+                                    BOARD_DIFFICULTY = 3;
+                                    tomap = M_MINE;
+                                    trstype = 0;
+                                    transition(true);
 
-                                ResumeMusicStream(s_slide);
+                                    ResumeMusicStream(s_slide);
+                                } else {
+                                    squidwardCounter++;
+                                    SetSoundPitch(s_pole, (100 - squidwardCounter)/100.0f);
+                                    PlaySound(s_pole);
+                                }
                                 break;
                             default:
                                 PlaySound(s_cancel);
@@ -5218,7 +5225,7 @@ static void UpdateDrawFrame(void){
         
         //except for debugging stuff because that oesnt really matter
         // DEBUGGGING TEXTs
-        r64text(TextFormat("Robot Sweeper 64 Recompiled WIP v2 (https://github.com/sonickirb/robotsweeper)\nterrain count: %i\nentity count: %i",gm3d.count,entlist.count),20,20,20,0,0,WHITE);
+        r64text(TextFormat("Robot Sweeper 64 Recompiled WIP v3 (https://github.com/sonickirb/robotsweeper)\nterrain count: %i\nentity count: %i",gm3d.count,entlist.count),20,20,20,0,0,WHITE);
         r64text(TextFormat("campos: %.2f, %.2f, %.2f",camera.position.x,camera.position.y,camera.position.z),20,100,20,0,0,WHITE);
         r64text(TextFormat("FPS: %.2f", 1 / dt),20,120,20,0,0,WHITE);
         //r64text(TextFormat("%d", malloced_memory_usage),20,120,40,0,0,WHITE);
