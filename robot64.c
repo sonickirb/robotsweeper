@@ -1553,9 +1553,9 @@ Texture2D getMineTexture(int textureID) {
 }
 
 #define TILE_SIZE 10
-#define BOARD_SIZEX 100
-#define BOARD_SIZEY 100
-#define BOARD_MINES 1000
+#define BOARD_SIZEX 9
+#define BOARD_SIZEY 9
+#define BOARD_MINES 10
 
 Entity faceEnt;
 
