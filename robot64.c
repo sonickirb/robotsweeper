@@ -299,6 +299,27 @@ const unsigned char tex_8[]={
 const unsigned char tex_9[]={
 #embed "textures/mine/9.png"
 };
+const unsigned char tex_10[]={
+#embed "textures/mine/10.png"
+};
+const unsigned char tex_11[]={
+#embed "textures/mine/11.png"
+};
+const unsigned char tex_12[]={
+#embed "textures/mine/12.png"
+};
+const unsigned char tex_13[]={
+#embed "textures/mine/13.png"
+};
+const unsigned char tex_14[]={
+#embed "textures/mine/14.png"
+};
+const unsigned char tex_15[]={
+#embed "textures/mine/15.png"
+};
+const unsigned char tex_16[]={
+#embed "textures/mine/16.png"
+};
 
 const unsigned char tex_tile[]={
 #embed "textures/mine/tile.png"
@@ -1566,7 +1587,7 @@ typedef struct MineTexture {
 MineTexture mineTextures[128];
 
 int theme = 0;
-#define MINE_TEXTURE_COUNT 26
+#define MINE_TEXTURE_COUNT 32
 
 Texture2D getMineTexture(int textureID) {
     textureID += MINE_TEXTURE_COUNT * theme;
@@ -1600,6 +1621,13 @@ Texture2D getMineTexture(int textureID) {
         if (textureID == 23) img = LoadImageFromMemory(".png", tex_9, sizeof(tex_9));
         if (textureID == 24) img = LoadImageFromMemory(".png", tex_question, sizeof(tex_question));
         if (textureID == 25) img = LoadImageFromMemory(".png", tex_questionclick, sizeof(tex_questionclick));
+        if (textureID == 26) img = LoadImageFromMemory(".png", tex_10, sizeof(tex_10));
+        if (textureID == 26) img = LoadImageFromMemory(".png", tex_11, sizeof(tex_11));
+        if (textureID == 27) img = LoadImageFromMemory(".png", tex_12, sizeof(tex_12));
+        if (textureID == 28) img = LoadImageFromMemory(".png", tex_13, sizeof(tex_13));
+        if (textureID == 29) img = LoadImageFromMemory(".png", tex_14, sizeof(tex_14));
+        if (textureID == 30) img = LoadImageFromMemory(".png", tex_15, sizeof(tex_15));
+        if (textureID == 31) img = LoadImageFromMemory(".png", tex_16, sizeof(tex_16));
         // dark
         if (textureID == 0+MINE_TEXTURE_COUNT) img = LoadImageFromMemory(".png", tex_tile_dark, sizeof(tex_tile_dark));
         if (textureID == 1+MINE_TEXTURE_COUNT) img = LoadImageFromMemory(".png", tex_open_dark, sizeof(tex_open_dark));
