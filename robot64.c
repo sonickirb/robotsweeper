@@ -1551,7 +1551,7 @@ void map_title(){
     gm3dlist newg;
     int i=0;
     Terrain tmp = {0}; // logo
-    tmp.x = 0;tmp.y = 0;tmp.z = 23;
+    tmp.x = 0;tmp.y = 2;tmp.z = 23;
     tmp.s = .03882770207;tmp.model = 2;tmp.tex = 2;
     newg.items[i] = tmp;i++;
     newg.count = i;
@@ -1647,7 +1647,7 @@ uint8_t BOARD_SIZEY = 9;
 uint8_t BOARD_MINES = 10;
 
 uint8_t BOARD_DIFFICULTY = 0;
-uint8_t BOARD_MODE = 1;
+uint8_t BOARD_MODE = 0;
 
 Entity faceEnt;
 
