@@ -4,10 +4,10 @@ raylib (used for this, specifically the itch.io installer): https://raylib.com
 *note: this project still uses raylib 5.5, an outdated version* 
 
 # Credits
-zKevin (roblox) for the original game (and letting me upload this to github)  
-LuaW1z and UncagedTwistedMania (roblox) for the decomp this is based off of (and letting me uplaod aswell)
-coneputer (github) for the original Robot Sweeper 64 mod
-GallantArc302 (github) for minesweeper sounds
+zKevin (roblox) for the original game (and letting me upload this to github)  [br]
+LuaW1z and UncagedTwistedMania (roblox) for the decomp this is based off of (and letting me uplaod aswell)  [br]
+coneputer (github) for the original Robot Sweeper 64 mod  [br]
+GallantArc302 (github) for minesweeper sounds  [br]
 
 # Debug controls
 Press `G` to noclip  
