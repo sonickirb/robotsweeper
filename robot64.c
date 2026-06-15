@@ -1696,6 +1696,7 @@ int getTileTextureID(int x, int y, int bx, int by) {
 
     int textureID = 0;
     if (mineTile.open) textureID = 1;
+    if (mineTile.num > 8) textureID += 13;
     textureID += mineTile.num;
     if (mineTile.flag) textureID = 11;
     if (mineTile.dflag) textureID = 20;
@@ -1710,6 +1711,18 @@ int getTileTextureID(int x, int y, int bx, int by) {
         if (mineTile.bombs==2 && x == bx && y == by) textureID = 21;
     }
     return textureID;
+}
+
+void clicktile(int bx, int by, int mdl, bool pound);
+
+void dbgBotTiles() {
+    for (int x = 0; x < BOARD_SIZEX; x++) {
+        for (int y = 0; y < BOARD_SIZEY; y++) {
+            MineTile mineTile = mineBoard[x][y];
+            int mdl = findvar(mineTile.ent.uid, V_TILE_MDL);
+            if (mineTile.bombs == 0) clicktile(x, y, mdl, false);
+        }
+    }
 }
 
 void resetTiles() {
@@ -1750,6 +1763,8 @@ void resetTiles() {
             //printf("%d %d bomb\n", x, y);
         }
     }
+
+    //dbgBotTiles();
 }
 
 void updateTileMats(int bx, int by) {
@@ -4910,41 +4925,50 @@ static void UpdateDrawFrame(void){
             Vector2 m = GetMousePosition();
             bool h = false;
             if(m.x>sw*.35f&&m.x<sw*.65f){
-                if(m.y>sh*.7f&&m.y<sh*.76f){
+                if(m.y>sh*.6f&&m.y<sh*.66f){
                     titleselt=0;
                     h=true;
-                }else if(m.y>sh*.8f&&m.y<sh*.86f){
+                }else if(m.y>sh*.7f&&m.y<sh*.76f){
                     titleselt=1;
                     h=true;
-                }else if(m.y>sh*.9f&&m.y<sh*.96f){
+                }else if(m.y>sh*.8f&&m.y<sh*.86f){
                     titleselt=2;
+                    h=true;
+                }else if(m.y>sh*.9f&&m.y<sh*.96f){
+                    titleselt=3;
                     h=true;
                 }
             }
-            if(((IsMouseButtonDown(MOUSE_BUTTON_LEFT)&&h)||IsKeyPressed(KEY_SPACE)
+            if(((IsMouseButtonPressed(MOUSE_BUTTON_LEFT)&&h)||IsKeyPressed(KEY_SPACE)
 #if defined(PLATFORM_WEB)
 #else
                 ||IsGamepadButtonPressed(0,GAMEPAD_BUTTON_RIGHT_FACE_DOWN)
 #endif
             )&&(!trsing)){
-                tomap = M_MINE;
+                if (titleselt > 0) { // Difficulties
+                    tomap = M_MINE;
 
-                resetGameVariables();
-                loadsave();
+                    resetGameVariables();
+                    loadsave();
 
-                BOARD_DIFFICULTY = titleselt;
+                    BOARD_DIFFICULTY = titleselt-1;
 
-                tomapx = 0;
-                tomapy = 10;
-                tomapz = 0;
-                trstype=0;transition(true);
+                    tomapx = 0;
+                    tomapy = 10;
+                    tomapz = 0;
+                    trstype=0;transition(true);
+                } else { // Mode
+                    BOARD_MODE += 1;
+                    if (BOARD_MODE > 1) BOARD_MODE = 0;
+                }
             }
+            r64text(BOARD_MODE == 0 ? "Mode: Classic" : "Mode: DoubleMines",sw2,sh*.6f,sh*0.06f,.5f,0,WHITE);
             r64text("Beginner",sw2,sh*.7f,sh*0.06f,.5f,0,WHITE);
             r64text("Intermediate",sw2,sh*.8f,sh*0.06f,.5f,0,WHITE);
             r64text("Expert",sw2,sh*.9f,sh*0.06f,.5f,0,WHITE);
             float rot = mod(GetTime()*80.0f,360);
             Vector2 off = Vector2Scale(fixrotpos2(rot),sh*-0.03f);
-            DrawTextureEx(spinny,Vector2Add((Vector2){(sw*.35f)+(sh*0.03f),(sh*.73f)+(titleselt*(sh*.1f))},off),rot,0.0078125f*(sh*0.06f),WHITE);
+            DrawTextureEx(spinny,Vector2Add((Vector2){(sw*.35f)+(sh*0.03f),(sh*.63f)+(titleselt*(sh*.1f))},off),rot,0.0078125f*(sh*0.06f),WHITE);
         }else{
             int ish = sh-inset;
             float uisize = (ish*.23f)+50;
