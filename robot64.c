@@ -310,6 +310,12 @@ const unsigned char tex_open[]={
 const unsigned char tex_flag[]={
 #embed "textures/mine/flag.png"
 };
+const unsigned char tex_question[]={
+#embed "textures/mine/question.png"
+};
+const unsigned char tex_questionclick[]={
+#embed "textures/mine/question-click.png"
+};
 const unsigned char tex_mine[]={
 #embed "textures/mine/mine.png"
 };
@@ -385,6 +391,12 @@ const unsigned char tex_open_dark[]={
 
 const unsigned char tex_flag_dark[]={
 #embed "textures/mine/dark/flag.png"
+};
+const unsigned char tex_question_dark[]={
+#embed "textures/mine/dark/question.png"
+};
+const unsigned char tex_questionclick_dark[]={
+#embed "textures/mine/dark/question-click.png"
 };
 const unsigned char tex_mine_dark[]={
 #embed "textures/mine/dark/mine.png"
@@ -1554,7 +1566,7 @@ typedef struct MineTexture {
 MineTexture mineTextures[128];
 
 int theme = 0;
-#define MINE_TEXTURE_COUNT 24
+#define MINE_TEXTURE_COUNT 26
 
 Texture2D getMineTexture(int textureID) {
     textureID += MINE_TEXTURE_COUNT * theme;
@@ -1586,6 +1598,8 @@ Texture2D getMineTexture(int textureID) {
         if (textureID == 21) img = LoadImageFromMemory(".png", tex_thedmine, sizeof(tex_thedmine));
         if (textureID == 22) img = LoadImageFromMemory(".png", tex_dwrong, sizeof(tex_dwrong));
         if (textureID == 23) img = LoadImageFromMemory(".png", tex_9, sizeof(tex_9));
+        if (textureID == 24) img = LoadImageFromMemory(".png", tex_question, sizeof(tex_question));
+        if (textureID == 25) img = LoadImageFromMemory(".png", tex_questionclick, sizeof(tex_questionclick));
         // dark
         if (textureID == 0+MINE_TEXTURE_COUNT) img = LoadImageFromMemory(".png", tex_tile_dark, sizeof(tex_tile_dark));
         if (textureID == 1+MINE_TEXTURE_COUNT) img = LoadImageFromMemory(".png", tex_open_dark, sizeof(tex_open_dark));
@@ -1611,6 +1625,8 @@ Texture2D getMineTexture(int textureID) {
         if (textureID == 21+MINE_TEXTURE_COUNT) img = LoadImageFromMemory(".png", tex_thedmine_dark, sizeof(tex_thedmine_dark));
         if (textureID == 22+MINE_TEXTURE_COUNT) img = LoadImageFromMemory(".png", tex_dwrong_dark, sizeof(tex_dwrong_dark));
         if (textureID == 23+MINE_TEXTURE_COUNT) img = LoadImageFromMemory(".png", tex_9_dark, sizeof(tex_9_dark));
+        if (textureID == 24+MINE_TEXTURE_COUNT) img = LoadImageFromMemory(".png", tex_question_dark, sizeof(tex_question_dark));
+        if (textureID == 25+MINE_TEXTURE_COUNT) img = LoadImageFromMemory(".png", tex_questionclick_dark, sizeof(tex_questionclick_dark));
         mineTex.tex = LoadTextureFromImage(img);
         SetTextureFilter(mineTex.tex, TEXTURE_FILTER_POINT);
         //SetTextureWrap(mineTex.tex, TEXTURE_WRAP_CLAMP);
@@ -1683,6 +1699,7 @@ typedef struct MineTile {
     bool flag;
     bool dflag;
     uint8_t num;
+    bool question;
 } MineTile;
 MineTile mineBoard[100][100];
 
@@ -1697,9 +1714,11 @@ int getTileTextureID(int x, int y, int bx, int by) {
     int textureID = 0;
     if (mineTile.open) textureID = 1;
     if (mineTile.num > 8) textureID += 13;
+    if (mineTile.num > 9) textureID += 2;
     textureID += mineTile.num;
     if (mineTile.flag) textureID = 11;
     if (mineTile.dflag) textureID = 20;
+    if (mineTile.question) textureID = 24;
     if (!mineInteract && !mineWon) {
         if (mineTile.bombs == 1) textureID = 10;
         if (mineTile.bombs == 2) textureID = 19;
@@ -1835,6 +1854,7 @@ void clicktile(int bx, int by, int mdl, bool pound) {
     
     if (!mineTile.open) {
         if (pound) {
+            // TODO: set question mark
             if (!mineTile.dflag) mineTile.flag = !mineTile.flag;
             if (BOARD_MODE == 1 && !mineTile.flag) mineTile.dflag = !mineTile.dflag;
             mineBoard[bx][by] = mineTile;
