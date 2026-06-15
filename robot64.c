@@ -267,6 +267,11 @@ const unsigned char title_bgm[]={
 #embed "music/title.mp3"
 };
 //textures
+
+const unsigned char tex_missing[]={
+#embed "textures/missing.png"
+};
+
 const unsigned char tex_1[]={
 #embed "textures/mine/1.png"
 };
@@ -291,6 +296,9 @@ const unsigned char tex_7[]={
 const unsigned char tex_8[]={
 #embed "textures/mine/8.png"
 };
+const unsigned char tex_9[]={
+#embed "textures/mine/9.png"
+};
 
 const unsigned char tex_tile[]={
 #embed "textures/mine/tile.png"
@@ -310,6 +318,18 @@ const unsigned char tex_themine[]={
 };
 const unsigned char tex_wrong[]={
 #embed "textures/mine/wrong.png"
+};
+const unsigned char tex_dflag[]={
+#embed "textures/mine/dflag.png"
+};
+const unsigned char tex_dmine[]={
+#embed "textures/mine/dmine.png"
+};
+const unsigned char tex_thedmine[]={
+#embed "textures/mine/thedmine.png"
+};
+const unsigned char tex_dwrong[]={
+#embed "textures/mine/dwrong.png"
 };
 
 const unsigned char tex_face[]={
@@ -352,6 +372,9 @@ const unsigned char tex_7_dark[]={
 const unsigned char tex_8_dark[]={
 #embed "textures/mine/dark/8.png"
 };
+const unsigned char tex_9_dark[]={
+#embed "textures/mine/dark/9.png"
+};
 
 const unsigned char tex_tile_dark[]={
 #embed "textures/mine/dark/tile.png"
@@ -371,6 +394,18 @@ const unsigned char tex_themine_dark[]={
 };
 const unsigned char tex_wrong_dark[]={
 #embed "textures/mine/dark/wrong.png"
+};
+const unsigned char tex_dflag_dark[]={
+#embed "textures/mine/dark/dflag.png"
+};
+const unsigned char tex_dmine_dark[]={
+#embed "textures/mine/dark/dmine.png"
+};
+const unsigned char tex_thedmine_dark[]={
+#embed "textures/mine/dark/thedmine.png"
+};
+const unsigned char tex_dwrong_dark[]={
+#embed "textures/mine/dark/dwrong.png"
 };
 
 const unsigned char tex_face_dark[]={
@@ -1516,16 +1551,16 @@ typedef struct MineTexture {
     bool loaded;
     Texture2D tex;
 } MineTexture;
-MineTexture mineTextures[64];
+MineTexture mineTextures[128];
 
 int theme = 0;
-#define MINE_TEXTURE_COUNT 19
+#define MINE_TEXTURE_COUNT 24
 
 Texture2D getMineTexture(int textureID) {
     textureID += MINE_TEXTURE_COUNT * theme;
     MineTexture mineTex = mineTextures[textureID];
     if (!mineTex.loaded) {
-        Image img;
+        Image img = LoadImageFromMemory(".png", tex_missing, sizeof(tex_missing));
         // default
         if (textureID == 0) img = LoadImageFromMemory(".png", tex_tile, sizeof(tex_tile));
         if (textureID == 1) img = LoadImageFromMemory(".png", tex_open, sizeof(tex_open));
@@ -1546,6 +1581,11 @@ Texture2D getMineTexture(int textureID) {
         if (textureID == 16) img = LoadImageFromMemory(".png", tex_faceuhoh, sizeof(tex_faceuhoh));
         if (textureID == 17) img = LoadImageFromMemory(".png", tex_facecool, sizeof(tex_facecool));
         if (textureID == 18) img = LoadImageFromMemory(".png", tex_facedead, sizeof(tex_facedead));
+        if (textureID == 19) img = LoadImageFromMemory(".png", tex_dmine, sizeof(tex_dmine));
+        if (textureID == 20) img = LoadImageFromMemory(".png", tex_dflag, sizeof(tex_dflag));
+        if (textureID == 21) img = LoadImageFromMemory(".png", tex_thedmine, sizeof(tex_thedmine));
+        if (textureID == 22) img = LoadImageFromMemory(".png", tex_dwrong, sizeof(tex_dwrong));
+        if (textureID == 23) img = LoadImageFromMemory(".png", tex_9, sizeof(tex_9));
         // dark
         if (textureID == 0+MINE_TEXTURE_COUNT) img = LoadImageFromMemory(".png", tex_tile_dark, sizeof(tex_tile_dark));
         if (textureID == 1+MINE_TEXTURE_COUNT) img = LoadImageFromMemory(".png", tex_open_dark, sizeof(tex_open_dark));
@@ -1566,6 +1606,11 @@ Texture2D getMineTexture(int textureID) {
         if (textureID == 16+MINE_TEXTURE_COUNT) img = LoadImageFromMemory(".png", tex_faceuhoh_dark, sizeof(tex_faceuhoh_dark));
         if (textureID == 17+MINE_TEXTURE_COUNT) img = LoadImageFromMemory(".png", tex_facecool_dark, sizeof(tex_facecool_dark));
         if (textureID == 18+MINE_TEXTURE_COUNT) img = LoadImageFromMemory(".png", tex_facedead_dark, sizeof(tex_facedead_dark));
+        if (textureID == 19+MINE_TEXTURE_COUNT) img = LoadImageFromMemory(".png", tex_dmine_dark, sizeof(tex_dmine_dark));
+        if (textureID == 20+MINE_TEXTURE_COUNT) img = LoadImageFromMemory(".png", tex_dflag_dark, sizeof(tex_dflag_dark));
+        if (textureID == 21+MINE_TEXTURE_COUNT) img = LoadImageFromMemory(".png", tex_thedmine_dark, sizeof(tex_thedmine_dark));
+        if (textureID == 22+MINE_TEXTURE_COUNT) img = LoadImageFromMemory(".png", tex_dwrong_dark, sizeof(tex_dwrong_dark));
+        if (textureID == 23+MINE_TEXTURE_COUNT) img = LoadImageFromMemory(".png", tex_9_dark, sizeof(tex_9_dark));
         mineTex.tex = LoadTextureFromImage(img);
         SetTextureFilter(mineTex.tex, TEXTURE_FILTER_POINT);
         //SetTextureWrap(mineTex.tex, TEXTURE_WRAP_CLAMP);
@@ -1581,11 +1626,12 @@ Texture2D getMineTexture(int textureID) {
 }
 
 #define TILE_SIZE 10
-int BOARD_SIZEX = 32;
-int BOARD_SIZEY = 9;
-int BOARD_MINES = 10;
+uint8_t BOARD_SIZEX = 32;
+uint8_t BOARD_SIZEY = 9;
+uint8_t BOARD_MINES = 10;
 
-int BOARD_DIFFICULTY = 0;
+uint8_t BOARD_DIFFICULTY = 0;
+uint8_t BOARD_MODE = 1;
 
 Entity faceEnt;
 
@@ -1633,8 +1679,9 @@ typedef struct MineTile {
     bool loaded;
     Entity ent;
     bool open;
-    bool bomb;
+    uint8_t bombs;
     bool flag;
+    bool dflag;
     uint8_t num;
 } MineTile;
 MineTile mineBoard[100][100];
@@ -1651,11 +1698,16 @@ int getTileTextureID(int x, int y, int bx, int by) {
     if (mineTile.open) textureID = 1;
     textureID += mineTile.num;
     if (mineTile.flag) textureID = 11;
+    if (mineTile.dflag) textureID = 20;
     if (!mineInteract && !mineWon) {
-        if (mineTile.bomb) textureID = 10;
-        if (mineTile.bomb && mineTile.flag) textureID = 11;
-        if (!mineTile.bomb && mineTile.flag) textureID = 12;
-        if (mineTile.bomb && x == bx && y == by) textureID = 13;
+        if (mineTile.bombs == 1) textureID = 10;
+        if (mineTile.bombs == 2) textureID = 19;
+        if (mineTile.bombs==1 && mineTile.flag) textureID = 11;
+        if (mineTile.bombs==2 && mineTile.dflag) textureID = 20;
+        if (mineTile.bombs!=1 && mineTile.flag) textureID = 12;
+        if (mineTile.bombs!=2 && mineTile.dflag) textureID = 22;
+        if (mineTile.bombs==1 && x == bx && y == by) textureID = 13;
+        if (mineTile.bombs==2 && x == bx && y == by) textureID = 21;
     }
     return textureID;
 }
@@ -1669,8 +1721,9 @@ void resetTiles() {
             MineTile mineTile = mineBoard[x][y];
             mineTile.loaded = false;
             mineTile.open = false;
-            mineTile.bomb = false;
+            mineTile.bombs = 0;
             mineTile.flag = false;
+            mineTile.dflag = false;
             mineTile.num = 0;
 
             int mdl = findvar(mineTile.ent.uid, V_TILE_MDL);
@@ -1687,8 +1740,10 @@ void resetTiles() {
         int y = rand() % BOARD_SIZEY;
 
         MineTile mineTile = mineBoard[x][y];
-        if (!mineTile.bomb) {
-            mineTile.bomb = true;
+        if (mineTile.bombs < 1) {
+            uint8_t r = rand() % (BOARD_MODE==0 ? 2 : 3);
+            while (mines+r > BOARD_MINES) r = rand() % (BOARD_MODE==0 ? 1 : 2);
+            mineTile.bombs = r;
             mineBoard[x][y] = mineTile;
             mines++;
 
@@ -1720,15 +1775,20 @@ void lose(int bx, int by) {
 void checkwin() {
     if (!mineInteract) return;
     int open = 0;
+    int bmines = 0;
 
     for (int x = 0; x < BOARD_SIZEX; x++) {
         for (int y = 0; y < BOARD_SIZEY; y++) {
             MineTile mineTile = mineBoard[x][y];
-            if (mineTile.open && !mineTile.bomb) open++;
+            if (mineTile.open && mineTile.bombs==0) 
+                open++; 
+            else if (mineTile.bombs > 0) bmines++;
         }
     }
 
-    if (open == (BOARD_SIZEX*BOARD_SIZEY) - BOARD_MINES) {
+    
+
+    if (open == (BOARD_SIZEX*BOARD_SIZEY) - bmines) {
         mineWon = true;
         mineInteract = false;
     }
@@ -1739,6 +1799,19 @@ uint64_t poundtimer = 0;
 int otilebx = -1;
 int otileby = -1;
 
+typedef struct TileClick {
+    bool loaded;
+    uint16_t x;
+    uint16_t y;
+} TileClick;
+#define TILE_QUEUE 10000
+TileClick tileClickQueue[TILE_QUEUE];
+int clickQueueCount = 0;
+
+bool mineInstantaneous = true;
+
+void tryclicktile(int bx, int by, int mdl, bool pound);
+
 void clicktile(int bx, int by, int mdl, bool pound) {
     checkwin();
     if (!mineInteract) return;
@@ -1747,11 +1820,10 @@ void clicktile(int bx, int by, int mdl, bool pound) {
     
     if (!mineTile.open) {
         if (pound) {
-            mineTile.flag = !mineTile.flag;
+            if (!mineTile.dflag) mineTile.flag = !mineTile.flag;
+            if (BOARD_MODE == 1 && !mineTile.flag) mineTile.dflag = !mineTile.dflag;
             mineBoard[bx][by] = mineTile;
-            int textureID = 0;
-            if (mineTile.flag) textureID = 11;
-            gm3d.items[mdl].mdl.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = getMineTexture(textureID);
+            gm3d.items[mdl].mdl.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = getMineTexture(getTileTextureID(bx, by, bx, by));
             /*
             if (mineTile.flag) {
                 otilebx = -1;
@@ -1760,7 +1832,7 @@ void clicktile(int bx, int by, int mdl, bool pound) {
             */
             return;
         }
-        if (mineTile.flag) return;
+        if (mineTile.flag || mineTile.dflag) return;
         updateFace(false, true, false, false);
 
         if (firstpress) {
@@ -1770,18 +1842,18 @@ void clicktile(int bx, int by, int mdl, bool pound) {
                     int y = by + oy;
                     MineTile neighbour = mineBoard[x][y];
 
-                    if (neighbour.bomb) {
+                    if (neighbour.bombs>0) {
                         int nx = rand() % BOARD_SIZEX;
                         int ny = rand() % BOARD_SIZEY;
                         MineTile at = mineBoard[nx][ny];
-                        while (at.bomb || (nx <= bx+1 && nx >= bx-1 && ny >= by-1 && ny <= by+1)) {
+                        while (at.bombs>0 || (nx <= bx+1 && nx >= bx-1 && ny >= by-1 && ny <= by+1)) {
                             nx = rand() % BOARD_SIZEX;
                             ny = rand() % BOARD_SIZEY;
                             at = mineBoard[nx][ny];
                         }
-                        neighbour.bomb = false;
+                        at.bombs = neighbour.bombs;
+                        neighbour.bombs = 0;
                         mineBoard[x][y] = neighbour;
-                        at.bomb = true;
                         mineBoard[nx][ny] = at;
                     }
 
@@ -1794,7 +1866,7 @@ void clicktile(int bx, int by, int mdl, bool pound) {
 
         mineTile.open = true;
 
-        if (mineTile.bomb) {
+        if (mineTile.bombs>0) {
             lose(bx, by);
             return;
         }
@@ -1805,8 +1877,7 @@ void clicktile(int bx, int by, int mdl, bool pound) {
                 int x = bx + ox;
                 int y = by + oy;
                 if (x > -1 && x < BOARD_SIZEX && y > -1 && y < BOARD_SIZEY && !(x == bx && y == by))
-                    if (mineBoard[x][y].bomb)
-                        mineTile.num++;
+                    mineTile.num += mineBoard[x][y].bombs;
             }
         }
 
@@ -1820,7 +1891,7 @@ void clicktile(int bx, int by, int mdl, bool pound) {
                     int y = by + oy;
                     if (x > -1 && x < BOARD_SIZEX && y > -1 && y < BOARD_SIZEY && !(x == bx && y == by)) {
                         if (mineBoard[x][y].num == 0)
-                            clicktile(x, y, findvar(mineBoard[x][y].ent.uid, V_TILE_MDL), false);
+                            tryclicktile(x, y, findvar(mineBoard[x][y].ent.uid, V_TILE_MDL), false);
                     }
                 }
             }
@@ -1833,8 +1904,7 @@ void clicktile(int bx, int by, int mdl, bool pound) {
                     int x = bx + ox;
                     int y = by + oy;
                     if (x > -1 && x < BOARD_SIZEX && y > -1 && y < BOARD_SIZEY && !(x == bx && y == by))
-                        if (mineBoard[x][y].flag)
-                            neighbourflags++;
+                        neighbourflags += mineBoard[x][y].flag ? 1 : mineBoard[x][y].dflag ? 2 : 0;
                 }
             }
 
@@ -1845,7 +1915,7 @@ void clicktile(int bx, int by, int mdl, bool pound) {
                         int y = by + oy;
                         if (x > -1 && x < BOARD_SIZEX && y > -1 && y < BOARD_SIZEY && !(x == bx && y == by)) {
                             if (!mineBoard[x][y].open)
-                                clicktile(x, y, findvar(mineBoard[x][y].ent.uid, V_TILE_MDL), false);
+                                tryclicktile(x, y, findvar(mineBoard[x][y].ent.uid, V_TILE_MDL), false);
                         }
                     }
                 }
@@ -1854,6 +1924,15 @@ void clicktile(int bx, int by, int mdl, bool pound) {
     }
 
     checkwin();
+}
+
+void tryclicktile(int bx, int by, int mdl, bool pound) {
+    if (mineInstantaneous) 
+        clicktile(bx, by, mdl, pound);
+    else {
+        tileClickQueue[clickQueueCount] = (TileClick){true, bx, by};
+        clickQueueCount++;
+    }
 }
 
 void map_mine(){
@@ -1885,6 +1964,9 @@ void map_mine(){
     mineWon = false;
     mineInteract = true;
     firstpress = true;
+    
+    for (int i = 0; i < TILE_QUEUE; i++)
+        tileClickQueue[i] = (TileClick){false, -1, -1};
 
     unloadassets();
     map = M_MINE;
@@ -1960,7 +2042,7 @@ void map_mine(){
             MineTile mineTile;
             mineTile.loaded = false;
             mineTile.open = false;
-            mineTile.bomb = false;
+            mineTile.bombs = 0;
             mineTile.flag = false;
             mineTile.num = 0;
 
@@ -2882,6 +2964,13 @@ void stepchar(){
         faceupdatetime = 0;
         updateFace(false, false, !mineInteract && !mineWon, mineWon);
     } else faceupdatetime+=dt;
+    for (int i = 0; i < 3; i++) {
+        TileClick mineclick = tileClickQueue[clickQueueCount-1];
+        if (mineclick.loaded) {
+            clicktile(mineclick.x, mineclick.y, findvar(mineBoard[mineclick.x][mineclick.y].ent.uid, V_TILE_MDL), false);
+            clickQueueCount--;
+        }
+    }
     bool rightcursor = mouselock||IsMouseButtonDown(MOUSE_BUTTON_RIGHT);
     float yimh = 0;
     float yimv = 0;
@@ -4081,6 +4170,19 @@ void stepchar(){
     wasplrpound = plrpound;
 }
 
+bool vSync = true;
+bool antialiasing = false;
+
+void updateWindowFlags() {
+    if (vSync && antialiasing)
+        SetConfigFlags(FLAG_VSYNC_HINT | FLAG_MSAA_4X_HINT);
+    else if (vSync)
+        SetWindowState(FLAG_VSYNC_HINT);
+    else if (antialiasing)
+        SetConfigFlags(FLAG_MSAA_4X_HINT);
+    else SetWindowState(0);
+}
+
 //----------------------------------------------------------------------------------
 // Main entry point
 //----------------------------------------------------------------------------------
@@ -4096,7 +4198,9 @@ int main(){
     // Initialization
     //--------------------------------------------------------------------------------------
     //SetConfigFlags(FLAG_WINDOW_TRANSPARENT);
-    SetConfigFlags(FLAG_VSYNC_HINT);
+    updateWindowFlags();
+    //SetConfigFlags(FLAG_VSYNC_HINT | FLAG_MSAA_4X_HINT);
+    //SetConfigFlags(FLAG_MSAA_4X_HINT);
     InitWindow(960, 540, "Robot Sweeper 64");
     rlEnableDepthTest();
     BeginDrawing();
@@ -4988,9 +5092,9 @@ static void UpdateDrawFrame(void){
             float btposx = framex+framesize*.8;
             float slidersize = sh*.08;
             float sliderbgsize = framesize*.05;
-            float sliderposy = framey+(framesize*.64)+(btsize/2);
+            float sliderposy = framey+(framesize*.84)+(btsize/2);
 
-            float volumeSliderPositionY = framey + (framesize * .84) + (btsize/2);
+            float volumeSliderPositionY = framey + (framesize * 1.04) + (btsize/2);
             
             bool ishovering = false;
             switch(pausemenu){
@@ -5062,7 +5166,7 @@ static void UpdateDrawFrame(void){
                     break;
                 case 1:
                     ishovering = mod(relmouse,framesize*.1)<=framesize*.09
-                        &&mousehover>-1&&mousehover<3
+                        &&mousehover>-1&&mousehover<5
                         &&m.x>=framex&&m.x<=framex+framesize;
                     if(ishovering){
                         pauseselt=mousehover;
@@ -5087,14 +5191,20 @@ static void UpdateDrawFrame(void){
                         ti++;
                     }
                     r64text(themeButtonText,sw2,framey+(framesize*.44),btsize,.5,0,WHITE);
+
+                    r64text("VSync",sw2,framey+(framesize*.54),btsize,.5,0,WHITE);
+                    DrawTexturePro(t_3dUI,(Rectangle){vSync?0:128,0,128,128},(Rectangle){btposx,framey+(framesize*.54),btsize,btsize},(Vector2){0},0,WHITE);
+
+                    r64text("Instantaneous Tiles",sw2,framey+(framesize*.64),btsize,.5,0,WHITE);
+                    DrawTexturePro(t_3dUI,(Rectangle){mineInstantaneous?0:128,0,128,128},(Rectangle){btposx,framey+(framesize*.64),btsize,btsize},(Vector2){0},0,WHITE);
                     
-                    r64text("Sensitivity:",sw2,framey+(framesize*.56),btsize,.5,0,(Color){200,200,200,255});
+                    r64text("Sensitivity:",sw2,framey+(framesize*.74),btsize,.5,0,(Color){200,200,200,255});
                     DrawRectangleV((Vector2){sw*.4,sliderposy-(sliderbgsize/2)},(Vector2){sw*.2,sliderbgsize},GREEN);
                     DrawTexturePro(
                     t_slider,(Rectangle){0,0,256,256},(Rectangle){sw*.4+sensitivity*sw*.2-slidersize/2,sliderposy,slidersize,slidersize},(Vector2){0},0,WHITE
                     );
 
-                    r64text("Volume:",sw2,framey+(framesize*.76),btsize,.5,0,(Color){200,200,200,255});
+                    r64text("Volume:",sw2,framey+(framesize*.94),btsize,.5,0,(Color){200,200,200,255});
                     DrawRectangleV((Vector2){sw*.4,volumeSliderPositionY-(sliderbgsize/2)},(Vector2){sw*.2,sliderbgsize},GREEN);
                     DrawTexturePro(
                     t_slider,(Rectangle){0,0,256,256},(Rectangle){sw*.4+gameVolume*sw*.2-slidersize/2,volumeSliderPositionY,slidersize,slidersize},(Vector2){0},0,WHITE
@@ -5118,6 +5228,13 @@ static void UpdateDrawFrame(void){
                                 theme++;
                                 if (theme > 1) theme = 0;
                                 updateTileMats(-1, -1);
+                                break;
+                            case 3:
+                                vSync=!vSync;
+                                updateWindowFlags();
+                                break;
+                            case 4:
+                                mineInstantaneous=!mineInstantaneous;
                                 break;
                             default:
                                 PlaySound(s_cancel);
