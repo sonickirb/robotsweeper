@@ -185,6 +185,20 @@ const bool gr3[]={ //if can be activated by beebo standing on it
 //embedded files
 
 //sfx
+
+const unsigned char sfx_mine_click[]={
+#embed "sfx/mine-click.wav"
+};
+const unsigned char sfx_mine_flag[]={
+#embed "sfx/mine-flag.wav"
+};
+const unsigned char sfx_mine_win[]={
+#embed "sfx/mine-win.wav"
+};
+const unsigned char sfx_mine_lose[]={
+#embed "sfx/mine-lose.wav"
+};
+
 const unsigned char sfx_loadto[]={
 #embed "sfx/loadmapout.ogg"
 };
@@ -933,6 +947,10 @@ Texture2D t_givebox;
 //sounds
 float soundRolloffGlobal = 0.05f; //rolloff for sound attenuation, higher is quieter
 
+Sound s_mine_click;
+Sound s_mine_flag;
+Sound s_mine_win;
+Sound s_mine_lose;
 Sound s_load1;
 Sound s_load2;
 Sound s_jump;
@@ -1832,6 +1850,8 @@ void lose(int bx, int by) {
     mineInteract = false;
     mineWon = false;
     updateTileMats(bx, by);
+    
+    PlaySound(s_mine_lose);
 }
 
 void checkwin() {
@@ -1853,6 +1873,7 @@ void checkwin() {
     if (open == (BOARD_SIZEX*BOARD_SIZEY) - bmines) {
         mineWon = true;
         mineInteract = false;
+        PlaySound(s_mine_win);
     }
 }
 
@@ -1873,6 +1894,7 @@ int clickQueueCount = 0;
 bool mineInstantaneous = true;
 
 void tryclicktile(int bx, int by, int mdl, bool pound);
+void PlaySoundAtPosition(Sound sound, Vector3 pos, float *maxDist, float volumeModifier);
 
 void clicktile(int bx, int by, int mdl, bool pound) {
     checkwin();
@@ -1893,6 +1915,7 @@ void clicktile(int bx, int by, int mdl, bool pound) {
                 otileby = -1;
             }
             */
+            PlaySound(s_mine_flag);
             return;
         }
         if (mineTile.flag || mineTile.dflag) return;
@@ -1959,6 +1982,8 @@ void clicktile(int bx, int by, int mdl, bool pound) {
                 }
             }
         }
+
+        PlaySound(s_mine_click);
     } else {
         if (pound) {
             int neighbourflags = 0;
@@ -4377,7 +4402,19 @@ int main(){
     UnloadImage(img);
     
     //load sounds
-    Wave wav = LoadWaveFromMemory(".ogg",sfx_loadto,sizeof(sfx_loadto));
+    Wave wav = LoadWaveFromMemory(".wav",sfx_mine_click,sizeof(sfx_mine_click));
+    s_mine_click = LoadSoundFromWave(wav);
+    UnloadWave(wav);
+    wav = LoadWaveFromMemory(".wav",sfx_mine_flag,sizeof(sfx_mine_flag));
+    s_mine_flag = LoadSoundFromWave(wav);
+    UnloadWave(wav);
+    wav = LoadWaveFromMemory(".wav",sfx_mine_win,sizeof(sfx_mine_win));
+    s_mine_win = LoadSoundFromWave(wav);
+    UnloadWave(wav);
+    wav = LoadWaveFromMemory(".wav",sfx_mine_lose,sizeof(sfx_mine_lose));
+    s_mine_lose = LoadSoundFromWave(wav);
+    UnloadWave(wav);
+    wav = LoadWaveFromMemory(".ogg",sfx_loadto,sizeof(sfx_loadto));
     s_load1 = LoadSoundFromWave(wav);
     UnloadWave(wav);
     wav = LoadWaveFromMemory(".ogg",sfx_loadfr,sizeof(sfx_loadfr));
