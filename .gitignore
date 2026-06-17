@@ -66,4 +66,9 @@ RobotSweeper64.exe
 RobotSweeper64
 save.r64s
 
+# raylib
+
 raylib/
+raylib.h
+raymath.h
+rlgl.h
