@@ -1819,11 +1819,12 @@ void resetTiles() {
 
         MineTile mineTile = mineBoard[x][y];
         if (mineTile.bombs < 1) {
-            uint8_t r = rand() % (BOARD_MODE==0 ? 2 : 3);
-            while (mines+r > BOARD_MINES) r = rand() % (BOARD_MODE==0 ? 1 : 2);
+            uint8_t r = (rand() % (BOARD_MODE==0 ? 1 : 2)) + 1;
+            //printf("%d %d \n", r, BOARD_MINES);
+            while (mines+r > BOARD_MINES) r = (rand() % (BOARD_MODE==0 ? 1 : 2)) + 1;
             mineTile.bombs = r;
             mineBoard[x][y] = mineTile;
-            mines++;
+            mines += r;
 
             //printf("%d %d bomb\n", x, y);
         }
