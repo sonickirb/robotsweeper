@@ -58,7 +58,7 @@ dkms.conf
 .vscode/
 
 # other bullcrap
-RobotSweeper64.html
+robotsweeper.html
 RobotSweeper64.zip
 RobotSweeper64.rc.data
 RobotSweeper64.rc.data.old
