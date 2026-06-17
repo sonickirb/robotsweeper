@@ -1609,6 +1609,7 @@ int theme = 0;
 
 Texture2D getMineTexture(int textureID) {
     textureID += MINE_TEXTURE_COUNT * theme;
+
     MineTexture mineTex = mineTextures[textureID];
     if (!mineTex.loaded) {
         Image img = LoadImageFromMemory(".png", tex_missing, sizeof(tex_missing));
