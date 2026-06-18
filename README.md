@@ -1,6 +1,6 @@
 # Robot Sweeper 64
 raylib (used for this, specifically the itch.io installer): https://raylib.com  
-*note: this project still uses raylib 5.5, an outdated version*
+> note: this project still uses raylib 5.5, an outdated version*
 
 ![image](https://github.com/sonickirb/robotsweeper/blob/main/screenshot000.png)
 
