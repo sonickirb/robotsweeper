@@ -4729,7 +4729,7 @@ static void UpdateDrawFrame(void){
         
         //except for debugging stuff because that oesnt really matter
         // DEBUGGGING TEXTs
-        r64text(TextFormat("Robot Sweeper 64 Recompiled WIP v4 (https://github.com/sonickirb/robotsweeper)\nterrain count: %i\nentity count: %i",gm3d.count,entlist.count),20,20,20,0,0,WHITE);
+        r64text(TextFormat("Robot Sweeper 64 Recompiled WIP v5 (https://github.com/sonickirb/robotsweeper)\nterrain count: %i\nentity count: %i",gm3d.count,entlist.count),20,20,20,0,0,WHITE);
         r64text(TextFormat("campos: %.2f, %.2f, %.2f",camera.position.x,camera.position.y,camera.position.z),20,100,20,0,0,WHITE);
         r64text(TextFormat("FPS: %.2f", 1 / dt),20,120,20,0,0,WHITE);
         //r64text(TextFormat("%d", malloced_memory_usage),20,120,40,0,0,WHITE);
